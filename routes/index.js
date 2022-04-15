@@ -10,4 +10,20 @@ router.get('/', function (req, res, next) {
 		.status(200);
 });
 
+router.get('/callback', function (req, res, next) {
+	return res
+		.json({
+			success: true,
+		})
+		.status(200);
+});
+
+router.post('/callback', function (req, res, next) {
+	return res
+		.json({
+			success: true,
+		})
+		.status(200);
+});
+
 module.exports = router;

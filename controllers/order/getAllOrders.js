@@ -10,8 +10,11 @@ const { getPagDetails } = require('../../helpers/pagination');
 const getAllOrders = async (req, res) => {
 	const { placeId, companyId, customerId } = req.params;
 	const { offset, limit, meta } = getPagDetails(req.query);
+	const { id } = req.headers;
 
-	const filter = {};
+	const filter = {
+		CustomerId: id,
+	};
 
 	if (placeId) {
 		filter.PlaceId = placeId;
@@ -21,8 +24,10 @@ const getAllOrders = async (req, res) => {
 		filter.CompanyId = companyId;
 	}
 
-	if (customerId && +req.headers.userid === +customerId) {
-		filter.CustomerId = customerId;
+	if (!placeId && !companyId) {
+		if (customerId && +req.headers.userid === +customerId) {
+			filter.CustomerId = customerId;
+		}
 	}
 
 	let orders;

@@ -3,8 +3,9 @@ const Company = require('../../models/Company');
 const Place = require('../../models/Place');
 const Image = require('../../models/Image');
 const { getPagDetails } = require('../../helpers/pagination');
-const sequelize = require('../../database');
-const { Sequelize } = require('sequelize');
+const { getLocationData } = require('../../helpers/location');
+const { Sequelize, Op } = require('sequelize');
+const { PRODUCT_STATUSES } = require('../../constants/index.js');
 
 const RADIUS = 10000;
 
@@ -16,11 +17,14 @@ const ORDER_OPTIONS = {
 
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
-	const { orderBy = 'date' } = req.query;
+	const { orderBy = 'date', search = '' } = req.query;
+	const { location } = req.headers;
+	const { distanceAttr, hasLocation } = getLocationData(location);
 
 	let order;
 	let dir = 'DESC';
 	let orderObj = [];
+	let searchReq = {};
 
 	if (ORDER_OPTIONS[orderBy]) {
 		order = ORDER_OPTIONS[orderBy];
@@ -33,7 +37,27 @@ const getProductsList = async (req, res) => {
 	orderObj = [order, dir];
 
 	if (order === 'distance') {
-		orderObj = [Sequelize.literal('distance'), dir];
+		if (hasLocation) {
+			orderObj = [Sequelize.literal('distance'), dir];
+		} else {
+			orderObj = ['id', 'DESC'];
+		}
+	}
+
+	if (search && search !== null && search !== 'null') {
+		searchReq = {
+			[Op.or]: {
+				title: {
+					[Op.iLike]: `%${search}%`,
+				},
+				description: {
+					[Op.iLike]: `%${search}%`,
+				},
+				'$Company.name$': {
+					[Op.iLike]: `%${search}%`,
+				},
+			},
+		};
 	}
 
 	let data;
@@ -44,45 +68,25 @@ const getProductsList = async (req, res) => {
 			offset,
 			limit,
 			attributes: {
-				include: [
-					[
-						sequelize.fn(
-							'ST_DistanceSphere',
-							sequelize.fn(
-								'ST_SetSRID',
-								sequelize.fn('ST_MakePoint', 24.7048009, 48.9220978),
-								4326
-							),
-							sequelize.col('Place.location')
-						),
-						'distance',
-					],
-				],
+				...distanceAttr,
+			},
+			where: {
+				createdAt: {
+					[Op.gt]: new Date(new Date() - 24 * 60 * 60 * 1000),
+				},
+				status: {
+					[Op.in]: [PRODUCT_STATUSES.ACTIVE, PRODUCT_STATUSES.OUT_OF_STOCK],
+				},
+				...searchReq,
 			},
 			include: [
-				Image,
-				Company,
+				{ model: Company, required: true, duplicating: false },
 				{
 					model: Place,
 					required: true,
 					duplicating: false,
-					// attributes: {
-					// 	include: [
-					// 		[
-					// 			Sequelize.fn(
-					// 				'ST_DistanceSphere',
-					// 				Sequelize.fn(
-					// 					'ST_SetSRID',
-					// 					Sequelize.fn('ST_MakePoint', 24.7048009, 48.9220978),
-					// 					4326
-					// 				),
-					// 				Sequelize.col('location')
-					// 			),
-					// 			'distance',
-					// 		],
-					// 	],
-					// },
 				},
+				Image,
 			],
 			order: [orderObj],
 		});

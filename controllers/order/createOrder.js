@@ -4,6 +4,7 @@ const Product = require('./../../models/Product');
 const OrderProduct = require('./../../models/Order/OrderProduct');
 const { COMMISION } = require('./../../constants/index.js');
 const sequelize = require('./../../database');
+const { PRODUCT_STATUSES } = require('./../../constants');
 
 /*
   products<[]>: {id: INTEGER, quantity: INTEGER}
@@ -55,20 +56,37 @@ const createOrder = async (req, res) => {
 			const currProduct = await Product.findByPk(id);
 
 			if (!currProduct) {
-				return reject({
-					field: 'product',
-					message: 'Product does not exist',
-				});
+				throw new Error('Product does not exist');
 			}
 
 			if (currProduct.PlaceId !== +placeId) {
-				return reject({
-					field: `products[${index}]`,
-					message: 'Product is located in different place',
-				});
+				throw new Error(
+					`products.${currProduct.id} || Product is located in different place`
+				);
+			}
+
+			if (currProduct.status !== PRODUCT_STATUSES.ACTIVE) {
+				throw new Error(`products.${currProduct.id} || out_of_stock`);
+			}
+
+			if (currProduct.availableCount < quantity) {
+				throw new Error(`products.${currProduct.id} || out_of_stock`);
+			}
+
+			if (currProduct.availableCountPerPerson < quantity) {
+				throw new Error(`products.${currProduct.id} || to_many_per_person`);
 			}
 
 			const productTotalPrice = currProduct.priceWithDiscount * quantity;
+
+			currProduct.availableCount -= quantity;
+
+			if (currProduct.availableCount === 0) {
+				currProduct.status = PRODUCT_STATUSES.OUT_OF_STOCK;
+			}
+
+			await currProduct.save({ transaction });
+
 			totalPrice += productTotalPrice;
 			foundProducts.push(currProduct);
 		}
@@ -76,12 +94,12 @@ const createOrder = async (req, res) => {
 		console.log(e);
 		transaction.rollback();
 
-		return res.status(404).json({
+		return res.status(400).json({
 			success: false,
 			errors: [
 				{
 					field: null,
-					error: e,
+					error: e && e.message,
 				},
 			],
 		});

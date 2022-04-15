@@ -16,9 +16,17 @@ const placesRouter = require('./routes/places');
 
 const app = express();
 
+const origin = [
+	'54.76.178.89',
+	'54.154.216.60',
+	'23.105.225.142',
+	'23.108.217.143',
+	'localhost',
+];
+
 const corsOptions = {
-	origin: 'capacitor://localhost',
-	credentials: true,
+	origin,
+	// credentials: true,
 };
 
 app.use(logger('dev'));
