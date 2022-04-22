@@ -1,4 +1,4 @@
-const User = require('./../../models/User');
+const { User, ProfileSettings } = require('./../../models');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 const getDbErrors = require('./../../helpers/validate/getDbErrors.js');
@@ -6,6 +6,7 @@ const getDbErrors = require('./../../helpers/validate/getDbErrors.js');
 const validationSchema = yup.object().shape({
 	name: yup.string().nullable(),
 	address: yup.string().nullable(),
+	email: yup.string().email('Email is not valid').nullable(),
 	latitude: yup
 		.number()
 		.typeError('Field must be a number')
@@ -19,13 +20,14 @@ const validationSchema = yup.object().shape({
 });
 
 const updateUser = async (req, res) => {
-	const { name, latitude, longtitude, address } = req.body;
+	const { name, latitude, longtitude, address, email } = req.body;
 	const { id } = req.headers;
 
 	const v = await validate(validationSchema, {
 		name,
 		latitude,
 		longtitude,
+		email,
 	});
 
 	if (!v.valid) {
@@ -38,7 +40,9 @@ const updateUser = async (req, res) => {
 	let user;
 
 	try {
-		user = await User.findByPk(id);
+		user = await User.findByPk(id, {
+			include: ProfileSettings,
+		});
 	} catch (e) {
 		return res.status(400).json({
 			success: false,
@@ -56,6 +60,10 @@ const updateUser = async (req, res) => {
 				},
 			],
 		});
+	}
+
+	if (email) {
+		user.email = email;
 	}
 
 	if (name) {

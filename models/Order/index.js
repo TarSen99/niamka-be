@@ -68,6 +68,7 @@ const Order = sequelize.define(
 );
 
 Order.hasMany(OrderProduct);
+OrderProduct.belongsTo(Order);
 
 // User.hasMany(Order, { as: 'customer' });
 Order.belongsTo(User, { as: 'Customer' });

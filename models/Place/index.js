@@ -9,14 +9,6 @@ const Place = sequelize.define(
 			type: DataTypes.GEOMETRY('POINT', 4326),
 			allowNull: false,
 		},
-		// latitude: {
-		// 	type: DataTypes.STRING,
-		// 	allowNull: false,
-		// },
-		// longtitude: {
-		// 	type: DataTypes.STRING,
-		// 	allowNull: false,
-		// },
 		address: {
 			type: DataTypes.STRING,
 			allowNull: false,

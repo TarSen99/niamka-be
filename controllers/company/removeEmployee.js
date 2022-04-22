@@ -1,5 +1,4 @@
-const User = require('./../../models/User');
-const UsersAndCompanies = require('./../../models/UsersAndCompanies');
+const { User, UsersAndCompanies } = require('./../../models');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 const checkIfUserExistsInFirebase = require('./../../helpers/firebase/getUser.js');

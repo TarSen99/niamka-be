@@ -1,4 +1,4 @@
-const Product = require('./../../models/Product');
+const { Product } = require('./../../models');
 const { PRODUCT_STATUSES } = require('./../../constants');
 
 const toggleAvailability = async (req, res) => {

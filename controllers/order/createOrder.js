@@ -1,10 +1,11 @@
-const Order = require('./../../models/Order');
-const Place = require('./../../models/Place');
-const Product = require('./../../models/Product');
-const OrderProduct = require('./../../models/Order/OrderProduct');
+const { Order, Place, Product, OrderProduct } = require('./../../models');
 const { COMMISION } = require('./../../constants/index.js');
 const sequelize = require('./../../database');
-const { PRODUCT_STATUSES } = require('./../../constants');
+const {
+	PRODUCT_STATUSES,
+	PAYMENT_METHODS,
+	ORDER_STATUSES,
+} = require('./../../constants');
 
 /*
   products<[]>: {id: INTEGER, quantity: INTEGER}
@@ -24,7 +25,7 @@ const getOrderNumber = () => {
 
 const getCustomerNumber = () => {
 	const date = new Date();
-	const v = `${+date}`.slice(0, 5);
+	const v = `${+date}`.slice(7, 12);
 	return v;
 };
 
@@ -37,9 +38,28 @@ const createOrder = async (req, res) => {
 	const foundProducts = [];
 	const transaction = await sequelize.transaction();
 
-	const place = await Place.findByPk(placeId);
+	console.log('Transaction created');
+
+	let place;
+	try {
+		place = await Place.findByPk(placeId);
+	} catch (e) {
+		console.log(e);
+		await transaction.rollback();
+
+		return res.status(404).json({
+			errors: [
+				{
+					field: 'placeId',
+					error: 'Place not found',
+				},
+			],
+		});
+	}
 
 	if (!place) {
+		await transaction.rollback();
+
 		return res.status(404).json({
 			errors: [
 				{
@@ -92,7 +112,7 @@ const createOrder = async (req, res) => {
 		}
 	} catch (e) {
 		console.log(e);
-		transaction.rollback();
+		await transaction.rollback();
 
 		return res.status(400).json({
 			success: false,
@@ -108,6 +128,14 @@ const createOrder = async (req, res) => {
 	let order;
 
 	try {
+		let status;
+
+		if (paymentMethod === PAYMENT_METHODS.CARD) {
+			status = ORDER_STATUSES.ACTIVE;
+		} else {
+			status = ORDER_STATUSES.TO_TAKE;
+		}
+
 		order = await Order.create(
 			{
 				paymentMethod,
@@ -118,13 +146,14 @@ const createOrder = async (req, res) => {
 				comission: COMMISION,
 				orderNumber: getOrderNumber(),
 				customerNumber: getCustomerNumber(),
+				status,
 			},
 			{
 				transaction,
 			}
 		);
 	} catch (e) {
-		transaction.rollback();
+		await transaction.rollback();
 		console.log(e);
 		return res.status(400).json({
 			success: false,
@@ -163,7 +192,7 @@ const createOrder = async (req, res) => {
 	} catch (e) {
 		console.log(e);
 
-		transaction.rollback();
+		await transaction.rollback();
 
 		return res.status(400).json({
 			success: false,
@@ -176,9 +205,14 @@ const createOrder = async (req, res) => {
 		});
 	}
 
-	transaction.commit();
+	let customer;
+	try {
+		customer = await order.getCustomer();
+	} catch (e) {
+		await transaction.rollback();
+	}
 
-	const customer = await order.getCustomer();
+	await transaction.commit();
 
 	return res.status(201).json({
 		success: true,

@@ -1,0 +1,139 @@
+const jobService = require('./../jobService');
+const {
+	Product,
+	Company,
+	Place,
+	User,
+	Image,
+	PushToken,
+	ProfileSettings,
+} = require('./../../models');
+const sendMessage = require('./../firebase/sendMessage.js');
+const { Op } = require('sequelize');
+const sequelize = require('./../../database');
+const { oneKMInDegrees } = require('./../../constants/index.js');
+
+const handler = async (data) => {
+	const { CompanyId, title, id, PlaceId } = data;
+
+	try {
+		company = await Company.findByPk(CompanyId, {
+			include: [
+				{
+					model: Place,
+					where: {
+						id: PlaceId,
+					},
+				},
+			],
+		});
+	} catch (e) {
+		throw e;
+	}
+
+	const placeData = company.Places[0];
+
+	if (!placeData) {
+		throw new Error('No place');
+	}
+
+	// let images;
+	// try {
+	// 	images = await Image.findAll({
+	// 		where: {
+	// 			ProductId: id,
+	// 		},
+	// 	});
+	// } catch (e) {
+	// 	throw e;
+	// }
+
+	const image = company.logo;
+
+	let users;
+
+	const coords = placeData.location.coordinates;
+
+	try {
+		users = await User.findAll({
+			include: [
+				{
+					model: PushToken,
+					required: true,
+					duplicating: false,
+				},
+				{
+					model: ProfileSettings,
+					required: true,
+					duplicating: false,
+					where: {
+						sendNewProductNotifications: true,
+					},
+				},
+			],
+			where: {
+				[Op.and]: [
+					{
+						registerType: 'phone',
+					},
+					{
+						longtitude: {
+							[Op.not]: null,
+						},
+					},
+					sequelize.where(
+						sequelize.literal(
+							`(SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${coords[0]}, ${coords[1]}), 4326), ST_SetSRID(ST_MakePoint("longtitude","latitude"), 4326)) +
+							 (SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${coords[0]}, ${coords[1]}), 4326), ST_SetSRID(ST_MakePoint("longtitude","latitude"), 4326)) * 0.2) )`
+						),
+						'<',
+						sequelize.literal(
+							`"ProfileSetting"."searchRadius" * ${oneKMInDegrees} * 0.9`
+						)
+					),
+				],
+			},
+		});
+	} catch (e) {
+		console.log(e);
+		throw e;
+	}
+
+	try {
+		for await (const user of users) {
+			if (!user.PushTokens || !user.PushTokens.length) {
+				return Promise.resolve();
+			}
+
+			for await (const currToken of user.PushTokens) {
+				await sendMessage({
+					token: currToken.token,
+					title: `New product from ${company.name}`,
+					body: 'It must be something yummy!',
+					image,
+					data: {
+						type: 'product',
+						id: '' + id,
+					},
+				});
+			}
+		}
+	} catch (e) {
+		throw e;
+	}
+};
+
+const config = {
+	name: 'notification-service',
+	callback: handler,
+	delay: 10000,
+};
+
+jobService.registerCallback(config);
+
+Product.addHook('afterCreate', async (product) => {
+	jobService.pushToQueue({
+		...product.toJSON(),
+		_config: { name: config.name },
+	});
+});

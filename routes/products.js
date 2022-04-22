@@ -24,7 +24,7 @@ const handleUploadFiles = (req, res, next) => {
 router.post('/add', isLoggedIn, handleUploadFiles, createProduct);
 router.put('/toggle/:id', isLoggedIn, toggleAvailability);
 router.get('/:id', isLoggedIn, viewProductDetails);
-router.get('/', isLoggedIn, getProductsList);
+router.get('/', getProductsList);
 router.delete('/:placeId', isLoggedIn, DeletePlace);
 
 module.exports = router;

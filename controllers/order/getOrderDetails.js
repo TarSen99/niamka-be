@@ -1,7 +1,4 @@
-const Order = require('./../../models/Order');
-const User = require('./../../models/User');
-const Product = require('./../../models/Product');
-const OrderProduct = require('./../../models/Order/OrderProduct');
+const { Order, User, Product, OrderProduct } = require('./../../models');
 
 const getOrderDetails = async (req, res) => {
 	const { id } = req.params;

@@ -1,5 +1,4 @@
-const User = require('./../../models/User');
-const UsersAndCompanies = require('./../../models/UsersAndCompanies');
+const { User, UsersAndCompanies } = require('./../../models');
 const { USER_ROLES_ARRAY, REGISTER_TYPES } = require('./../../constants');
 const sequelize = require('./../../database');
 const yup = require('yup');
@@ -69,7 +68,8 @@ const addEmployee = async (req, res) => {
 			});
 		}
 	} catch (e) {
-		transaction.rollback();
+		console.log(e);
+		await transaction.rollback();
 		return res.status(400).json({
 			success: false,
 			errors: [
@@ -88,7 +88,7 @@ const addEmployee = async (req, res) => {
 	});
 
 	if (all.length) {
-		transaction.rollback();
+		await transaction.rollback();
 
 		return res.status(400).json({
 			success: false,
@@ -115,7 +115,7 @@ const addEmployee = async (req, res) => {
 			}
 		);
 	} catch (e) {
-		transaction.rollback();
+		await transaction.rollback();
 
 		return res.status(500).json({
 			success: false,
@@ -128,7 +128,7 @@ const addEmployee = async (req, res) => {
 		});
 	}
 
-	transaction.commit();
+	await transaction.commit();
 
 	return res.status(201).json({
 		success: true,

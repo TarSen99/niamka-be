@@ -1,5 +1,4 @@
-const User = require('./../../models/User');
-const Company = require('./../../models/Company');
+const { User, Company } = require('./../../models');
 const { USER_ROLES_ARRAY, USER_ROLES } = require('./../../constants');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');

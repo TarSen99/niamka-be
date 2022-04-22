@@ -1,6 +1,4 @@
-const Product = require('../../models/Product');
-const Company = require('../../models/Company');
-const Image = require('../../models/Image');
+const { Product, Company, Image } = require('../../models');
 
 const { getPagDetails } = require('../../helpers/pagination');
 

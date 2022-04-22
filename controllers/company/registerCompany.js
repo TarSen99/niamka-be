@@ -1,6 +1,4 @@
-const Company = require('./../../models/Company');
-const UsersAndCompanies = require('./../../models/UsersAndCompanies');
-const Place = require('./../../models/Place');
+const { Company, UsersAndCompanies, Place } = require('./../../models');
 const { USER_ROLES } = require('./../../constants');
 const sequelize = require('./../../database');
 const { writeCookie } = require('./../../helpers/cookie');
@@ -16,7 +14,7 @@ const validationSchema = yup.object().shape({
 
 const registerCompany = async (req, res) => {
 	const { name, latitude, longtitude, address, logo } = req.body;
-	const { user_id } = req.headers;
+	const { id } = req.headers;
 	const image = req.file;
 
 	const v = await validate(validationSchema, {
@@ -49,7 +47,7 @@ const registerCompany = async (req, res) => {
 		);
 	} catch (e) {
 		console.log(e);
-		transaction.rollback();
+		await transaction.rollback();
 		return res.status(400).json({
 			success: false,
 		});
@@ -74,7 +72,7 @@ const registerCompany = async (req, res) => {
 		);
 	} catch (e) {
 		console.log(e);
-		transaction.rollback();
+		await transaction.rollback();
 		return res.status(400).json({
 			success: false,
 		});
@@ -87,7 +85,7 @@ const registerCompany = async (req, res) => {
 			{
 				role: USER_ROLES.OWNER,
 				CompanyId: company.id,
-				UserId: user_id,
+				UserId: id,
 			},
 			{
 				transaction,
@@ -95,12 +93,12 @@ const registerCompany = async (req, res) => {
 		);
 	} catch (e) {
 		console.log(e);
-		transaction.rollback();
+		await transaction.rollback();
 		return res.status(400).json({
 			success: false,
 		});
 	}
-	transaction.commit();
+	await transaction.commit();
 
 	writeCookie(res, 'role', USER_ROLES.OWNER);
 	writeCookie(res, 'companyId', company.id);

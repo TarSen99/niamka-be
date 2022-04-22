@@ -1,6 +1,5 @@
 const app = require('./../../services/firebase');
-const User = require('./../../models/User');
-const Company = require('./../../models/Company');
+const { User, Company, ProfileSettings } = require('./../../models');
 const { getAuth } = require('firebase-admin/auth');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
@@ -36,7 +35,7 @@ const login = async (req, res) => {
 			where: {
 				[Op.or]: [{ email: loginValue }, { phone: loginValue }],
 			},
-			include: Company,
+			include: [Company, ProfileSettings],
 		});
 	} catch (e) {
 		console.log(e);

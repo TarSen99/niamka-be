@@ -1,41 +1,68 @@
-const Order = require('../../models/Order');
+const { Order, Transaction, OrderProduct, Product } = require('../../models');
 const { ORDER_STATUSES } = require('../../constants/');
 const rollbackProductData = require('../../helpers/product/rollbackProductData.js');
-const OrderProduct = require('../../models/Order/OrderProduct');
+const refundOrder = require('../../controllers/order/refundOrder.js');
+const sequelize = require('./../../database');
 
 const changeOrderStatus = async (req, res) => {
 	const { orderId } = req.params;
 	const status = req.orderStatus;
-
 	const order = await Order.findByPk(orderId, {
-		include: OrderProduct,
+		include: [
+			Transaction,
+			{
+				model: OrderProduct,
+				include: Product,
+			},
+		],
 	});
 
-	order.status = status;
+	const transaction = await sequelize.transaction();
 
 	if (status === ORDER_STATUSES.CANCELLED) {
 		try {
 			for await (const orderProduct of order.OrderProducts) {
 				await rollbackProductData({
-					productId: orderProduct.ProductId,
+					product: orderProduct.Product,
 					addCount: orderProduct.quantity,
+					transaction,
 				});
 			}
+
+			await refundOrder({ order, transaction });
 		} catch (e) {
 			console.log(e);
+			await transaction.rollback();
 			return res.status(500).json({
 				success: false,
 				errors: [
 					{
 						field: null,
-						error: 'Something went wrong',
+						error: e,
 					},
 				],
 			});
 		}
 	}
 
-	await order.save();
+	order.status = status;
+
+	try {
+		await order.save({ transaction });
+	} catch (e) {
+		await transaction.rollback();
+		return res.status(500).json({
+			success: false,
+			errors: [
+				{
+					field: null,
+					error: 'Something went wrong',
+				},
+			],
+		});
+	}
+
+	await transaction.commit();
 
 	return res.status(200).json({
 		success: true,

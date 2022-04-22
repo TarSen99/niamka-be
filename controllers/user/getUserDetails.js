@@ -1,12 +1,27 @@
-const User = require('./../../models/User');
-const Company = require('./../../models/Company');
+const { User, Company, ProfileSettings } = require('./../../models');
 
 const getUserDetails = async (req, res) => {
-	const { id } = req.headers;
+	const { userid } = req.headers;
 
-	const user = await User.findByPk(id, {
-		include: Company,
-	});
+	let user;
+
+	try {
+		user = await User.findByPk(userid, {
+			include: [Company, ProfileSettings],
+		});
+	} catch (e) {
+		console.log(e);
+
+		return res.status(404).json({
+			success: false,
+			errors: [
+				{
+					field: 'id',
+					error: 'User not found',
+				},
+			],
+		});
+	}
 
 	if (!user) {
 		return res.status(404).json({

@@ -1,0 +1,23 @@
+{
+	"development": {
+		"username": "tarasseniv",
+		"password": null,
+		"database": "tarasseniv",
+		"host": "localhost",
+		"dialect": "postgres"
+	},
+	"test": {
+		"username": "tarasseniv",
+		"password": null,
+		"database": "tarasseniv",
+		"host": "localhost",
+		"dialect": "postgres"
+	},
+	"production": {
+		"username": "tarasseniv",
+		"password": null,
+		"database": "tarasseniv",
+		"host": "localhost",
+		"dialect": "postgres"
+	}
+}

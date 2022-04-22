@@ -1,6 +1,4 @@
-const Product = require('./../../models/Product');
-const Place = require('./../../models/Place');
-const Image = require('./../../models/Image');
+const { Product, Place, Image } = require('./../../models');
 const sequelize = require('./../../database');
 
 const yup = require('yup');
@@ -8,7 +6,11 @@ const validate = require('./../../helpers/validate');
 
 const validationSchema = yup.object().shape({
 	title: yup.string().required('Field is required').nullable(),
-	description: yup.string().required('Field is required').nullable(),
+	description: yup
+		.string()
+		.required('Field is required')
+		.max(200, 'Max length 200 characters')
+		.nullable(),
 	availableCount: yup
 		.number()
 		.typeError('Field must be a number')
@@ -87,7 +89,7 @@ const createProduct = async (req, res) => {
 	const place = await Place.findByPk(placeId);
 
 	if (!place || place.disabled) {
-		productTransaction.rollback();
+		await productTransaction.rollback();
 
 		return res.status(404).json({
 			success: false,
@@ -121,7 +123,8 @@ const createProduct = async (req, res) => {
 			}
 		);
 	} catch (e) {
-		productTransaction.rollback();
+		console.log(e);
+		await productTransaction.rollback();
 		return res.status(500).json({
 			success: false,
 			errors: [{ error: e }],
@@ -130,20 +133,6 @@ const createProduct = async (req, res) => {
 
 	const images = req.files;
 	const files = [];
-
-	// if (!images.length) {
-	// 	productTransaction.rollback();
-
-	// 	return res.status(400).json({
-	// 		success: false,
-	// 		errors: [
-	// 			{
-	// 				field: 'Images',
-	// 				error: 'Images are required',
-	// 			},
-	// 		],
-	// 	});
-	// }
 
 	for await (const image of images) {
 		try {
@@ -159,7 +148,7 @@ const createProduct = async (req, res) => {
 
 			files.push(imageData.toJSON());
 		} catch (e) {
-			productTransaction.rollback();
+			await productTransaction.rollback();
 
 			return res.status(404).json({
 				success: false,
@@ -173,7 +162,7 @@ const createProduct = async (req, res) => {
 		}
 	}
 
-	productTransaction.commit();
+	await productTransaction.commit();
 
 	return res.status(201).json({
 		success: true,

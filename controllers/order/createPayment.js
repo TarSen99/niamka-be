@@ -1,12 +1,15 @@
 const CloudIpsp = require('cloudipsp-node-js-sdk');
 const { genSignature } = require('cloudipsp-node-js-sdk/lib/util.js');
-const Order = require('../../models/Order');
-const Transaction = require('../../models/Transaction');
-
-const SECRET = 'TQKfQnUpj5WDo4aCJCDwmLMffCEcsaIB';
+const { Order, Transaction, User } = require('../../models');
+const {
+	SECRET,
+	TRANSACTION_STATUSES,
+	CURRENCY,
+	MERCHANT_ID,
+} = require('../../constants/index.js');
 
 const fondy = new CloudIpsp({
-	merchantId: 1445132,
+	merchantId: MERCHANT_ID,
 	secretKey: SECRET,
 });
 
@@ -14,7 +17,7 @@ const createPayment = async (req, res) => {
 	const { orderId } = req.params;
 
 	const order = await Order.findByPk(orderId, {
-		include: Transaction,
+		include: [Transaction, { model: User, as: 'Customer' }],
 	});
 
 	if (!order) {
@@ -24,20 +27,24 @@ const createPayment = async (req, res) => {
 		});
 	}
 
-	const { orderNumber, totalPrice, CustomerId } = order;
+	const { orderNumber, totalPrice } = order;
 	const priceToFixed = totalPrice.toFixed(2);
 
 	const requestData = {
-		server_callback_url: 'https://tricky-wasp-32.loca.lt/orders/payed',
-		order_id: `#${orderNumber}`,
+		server_callback_url: 'https://78e0-93-175-200-96.eu.ngrok.io/orders/payed',
+		order_id: `#${orderNumber}/${orderId}`,
 		order_desc: `Order #${orderNumber}`,
-		currency: 'UAH',
-		// In cents
+		currency: CURRENCY,
 		amount: `${priceToFixed * 100}`,
 		required_rectoken: 'Y',
-		delayed: 'N',
-		merchant_id: '1445132',
+		delayed: 'Y',
+		merchant_id: MERCHANT_ID,
+		lifetime: '600000', // 10 min
 	};
+
+	if (order.Customer.email) {
+		requestData.sender_email = order.Customer.email;
+	}
 
 	const signature = genSignature(requestData, SECRET);
 
@@ -70,6 +77,8 @@ const createPayment = async (req, res) => {
 				amount: requestData.amount,
 				token: token,
 				OrderId: orderId,
+				status: TRANSACTION_STATUSES.PENDING,
+				currency: CURRENCY,
 			});
 		} catch (e) {
 			console.log(e);

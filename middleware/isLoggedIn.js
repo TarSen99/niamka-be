@@ -1,6 +1,14 @@
 const { getAuth } = require('firebase-admin/auth');
 const app = require('./../services/firebase');
 
+const isNull = (v) => {
+	if (!v) {
+		return true;
+	}
+
+	return v === 'null' || v === 'undefined' || v === 'NaN';
+};
+
 const isLoggedIn = async (req, res, next) => {
 	const token = req.headers.token || '';
 
@@ -17,7 +25,7 @@ const isLoggedIn = async (req, res, next) => {
 	const userId = req.headers.userid || req.signedCookies.data;
 	const companyId = req.headers.companyid || req.signedCookies.companyId;
 
-	if (!userId) {
+	if (isNull(userId)) {
 		return res.status(401).json({
 			id: 'User is not authenticated',
 		});

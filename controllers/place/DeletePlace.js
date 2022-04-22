@@ -1,5 +1,4 @@
-const Place = require('./../../models/Place');
-const Product = require('./../../models/Product');
+const { Place, Product } = require('./../../models');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 

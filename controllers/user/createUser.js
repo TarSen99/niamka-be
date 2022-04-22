@@ -1,10 +1,12 @@
 const app = require('./../../services/firebase');
-const User = require('./../../models/User');
+const { User, ProfileSettings } = require('./../../models');
 const { writeCookie } = require('./../../helpers/cookie');
 const { getAuth } = require('firebase-admin/auth');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 const getDbErrors = require('./../../helpers/validate/getDbErrors.js');
+const { DEFAULT_RADIUS } = require('./../../constants');
+const sequelize = require('./../../database');
 
 const validationSchema = yup.object().shape({
 	name: yup.string().required('Field is required').nullable(),
@@ -70,28 +72,52 @@ const creatUser = async (req, res) => {
 	}
 
 	let user;
+	let ProfileSetting;
+
+	const transaction = await sequelize.transaction();
 
 	try {
-		user = await User.create({
-			name,
-			address,
-			phone,
-			email,
-			registerType: registerType,
-			isEmailVerified: false,
-		});
+		user = await User.create(
+			{
+				name,
+				address,
+				phone,
+				email,
+				registerType: registerType,
+				isEmailVerified: false,
+			},
+			{
+				transaction,
+			}
+		);
+
+		ProfileSetting = await ProfileSettings.create(
+			{
+				searchRadius: DEFAULT_RADIUS,
+				sendNewProductNotifications: false,
+			},
+			{
+				transaction,
+			}
+		);
 	} catch (e) {
+		await transaction.rollback();
 		return res.status(400).json({
 			success: false,
 			errors: getDbErrors(e),
 		});
 	}
 
+	await transaction.commit();
+
 	writeCookie(res, 'data', user.id);
 
 	return res.status(200).json({
 		success: true,
-		data: user.toJSON(),
+		data: {
+			...user.toJSON(),
+			ProfileSetting: ProfileSetting.toJSON(),
+		},
 	});
 };
 

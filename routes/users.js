@@ -6,6 +6,8 @@ const login = require('./../controllers/user/login.js');
 const createUserWithPhone = require('./../controllers/user/createUserWithPhone.js');
 const logout = require('./../controllers/user/logout.js');
 const updateDetails = require('./../controllers/user/updateDetails.js');
+const getUserSavedCards = require('./../controllers/user/getUserSavedCards.js');
+const updateUserSettings = require('./../controllers/user/updateUserSettings.js');
 const router = express.Router();
 
 const isLoggedIn = require('../middleware/isLoggedIn.js');
@@ -17,6 +19,8 @@ router.post('/create/phone', createUserWithPhone);
 router.post('/check', checkIfUserExist);
 router.post('/login', login);
 router.put('/update', isLoggedIn, updateDetails);
+router.put('/settings/update', isLoggedIn, updateUserSettings);
+router.get('/mine/cards', isLoggedIn, getUserSavedCards);
 router.get('/mine', isLoggedIn, getUserDetails);
 
 module.exports = router;

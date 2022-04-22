@@ -1,4 +1,3 @@
-const { DataTypes } = require('sequelize');
 const { PRODUCT_STATUSES } = require('./../../constants');
 const Image = require('../Image');
 const Place = require('../Place');

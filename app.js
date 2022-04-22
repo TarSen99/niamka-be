@@ -4,6 +4,10 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+// require('./services/clear-order-queue/ClearOrdersQueueService.js');
+// require('./services/expire-product-queue/index.js');
+// require('./services/send-product-notifications/index.js');
+require('./services/send-product-notifications/notificationService.js');
 
 require('./database');
 
@@ -13,6 +17,7 @@ const productsRouter = require('./routes/products');
 const companiesRouter = require('./routes/companies');
 const ordersRouter = require('./routes/orders');
 const placesRouter = require('./routes/places');
+const tokensRouter = require('./routes/tokens');
 
 const app = express();
 
@@ -22,6 +27,9 @@ const origin = [
 	'23.105.225.142',
 	'23.108.217.143',
 	'localhost',
+	'capacitor://localhost',
+	'http://localhost',
+	'http://localhost:8081',
 ];
 
 const corsOptions = {
@@ -42,6 +50,7 @@ app.use('/products', productsRouter);
 app.use('/companies', companiesRouter);
 app.use('/places', placesRouter);
 app.use('/orders', ordersRouter);
+app.use('/token', tokensRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -20,6 +20,36 @@
 //     }
 //   }
 
+const {
+	SECRET,
+	ORDER_STATUSES,
+	TRANSACTION_STATUSES,
+} = require('../../constants');
+const { genSignature } = require('cloudipsp-node-js-sdk/lib/util.js');
+const { Order, Transaction, SavedCreditCard, User } = require('../../models');
+const reverseOrder = require('../../controllers/order/reverseOrder.js');
+
+const saveUserEmail = async ({ userId, email }) => {
+	let user;
+	try {
+		user = await User.findByPk(userId);
+	} catch (e) {
+		return;
+	}
+
+	if (!user) {
+		return;
+	}
+
+	if (user.email) {
+		return;
+	}
+
+	user.email = email;
+
+	await user.save();
+};
+
 const markOrderAsPayed = async (req, res) => {
 	const {
 		// failure OR success
@@ -27,17 +57,110 @@ const markOrderAsPayed = async (req, res) => {
 		order_status,
 		order_id,
 		sender_email,
-		merchant_id,
 		rectoken,
-	} = req.params;
+		rectoken_lifetime,
+		signature,
+		masked_card,
+		card_type,
+		amount,
+		currency,
+	} = req.body;
 
-	console.log('----------------------------');
-	console.log(sender_email);
-	console.log(response_status);
-	console.log(order_status);
-	console.log(order_id);
-	console.log(merchant_id);
-	console.log(rectoken);
+	if (order_status === 'created' || order_status === 'processing') {
+		return res.status(200).json({
+			success: true,
+		});
+	}
+
+	// console.log(sender_email);
+
+	if (response_status !== 'success') {
+		return res.status(200).json({
+			success: true,
+		});
+	}
+
+	const orderIdValue = order_id.split('/')[1];
+
+	const order = await Order.findByPk(orderIdValue, {
+		include: Transaction,
+	});
+
+	if (!order) {
+		await reverseOrder({ orderId: order_id, amount, currency, order_status });
+		return res.status(200).json({
+			success: true,
+		});
+	}
+
+	if (!order.Transaction) {
+		await reverseOrder({ orderId: order_id, amount, currency, order_status });
+
+		return res.status(200).json({
+			success: true,
+		});
+	}
+
+	const generatedSignature = genSignature(req.body, SECRET);
+
+	if (signature !== generatedSignature) {
+		order.Transaction.status = TRANSACTION_STATUSES.REJECTED;
+		order.status = ORDER_STATUSES.ACTIVE;
+		await order.save();
+		await order.Transaction.save();
+
+		await reverseOrder({
+			orderId: order_id,
+			amount,
+			currency,
+			order_status,
+		});
+
+		return res.status(200).json({
+			success: true,
+		});
+	}
+
+	if (order_status === 'approved') {
+		order.status = ORDER_STATUSES.PAYED;
+		order.Transaction.status = TRANSACTION_STATUSES.COMPLETED;
+
+		try {
+			await order.save();
+			await order.Transaction.save();
+			await saveUserEmail({ email: sender_email, userId: order.CustomerId });
+
+			await SavedCreditCard.findOrCreate({
+				where: {
+					rectoken,
+					UserId: order.CustomerId,
+				},
+				defaults: {
+					UserId: order.CustomerId,
+					expiration: rectoken_lifetime,
+					mackedCard: masked_card,
+					cardType: card_type,
+					rectoken,
+				},
+			});
+		} catch (e) {
+			return res.status(200).json({
+				success: true,
+			});
+		}
+	} else if (
+		order_status === 'declined' ||
+		order_status === 'expired' ||
+		order_status === 'reversed'
+	) {
+		try {
+			await order.Transaction.destroy();
+		} catch (e) {
+			return res.status(200).json({
+				success: true,
+			});
+		}
+	}
 
 	return res.status(200).json({
 		success: true,

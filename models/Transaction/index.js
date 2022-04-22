@@ -20,12 +20,23 @@ const Transaction = sequelize.define(
 		},
 		token: {
 			type: DataTypes.STRING,
+		},
+		currency: {
+			type: DataTypes.STRING,
 			allowNull: false,
+		},
+		status: {
+			type: DataTypes.STRING,
 		},
 	},
 	{
 		sequelize,
 		modelName: 'Transaction',
+		hooks: {
+			beforeCreate() {
+				// AFTER 10 min need to destroy transaction
+			},
+		},
 	}
 );
 

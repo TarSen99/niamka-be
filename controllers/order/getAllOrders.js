@@ -1,20 +1,38 @@
-const Order = require('../../models/Order');
-const User = require('../../models/User');
-const Product = require('../../models/Product');
-const Image = require('../../models/Image');
-const OrderProduct = require('../../models/Order/OrderProduct');
-const Place = require('../../models/Place');
-const Company = require('../../models/Company');
+const {
+	Order,
+	User,
+	Product,
+	Image,
+	OrderProduct,
+	Place,
+	Company,
+} = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
 
-const getAllOrders = async (req, res) => {
-	const { placeId, companyId, customerId } = req.params;
-	const { offset, limit, meta } = getPagDetails(req.query);
-	const { id } = req.headers;
+const isNull = (v) => {
+	if (!v) {
+		return true;
+	}
 
-	const filter = {
-		CustomerId: id,
-	};
+	return v === 'null' || v === 'undefined' || v === 'NaN';
+};
+
+const getAllOrders = async (req, res) => {
+	const { placeId, companyId } = req.params;
+	const { offset, limit, meta } = getPagDetails(req.query);
+	const { userid } = req.headers;
+
+	let customerId = +userid;
+
+	if (isNull(companyId) && isNull(placeId) && isNull(customerId)) {
+		return res.status(200).json({
+			success: true,
+			data: {},
+			meta: {},
+		});
+	}
+
+	const filter = {};
 
 	if (placeId) {
 		filter.PlaceId = placeId;
@@ -24,8 +42,8 @@ const getAllOrders = async (req, res) => {
 		filter.CompanyId = companyId;
 	}
 
-	if (!placeId && !companyId) {
-		if (customerId && +req.headers.userid === +customerId) {
+	if (isNull(companyId) && isNull(placeId)) {
+		if (customerId) {
 			filter.CustomerId = customerId;
 		}
 	}

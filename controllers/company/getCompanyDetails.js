@@ -1,9 +1,14 @@
-const Company = require('./../../models/Company');
-const User = require('./../../models/User');
-const Place = require('./../../models/Place');
+const { Company, User, Place } = require('./../../models');
 
 const getCompanyDetails = async (req, res) => {
 	const { companyId } = req.params;
+
+	if (!companyId || companyId === 'undefined' || companyId === 'null') {
+		return res.status(200).json({
+			success: true,
+			data: {},
+		});
+	}
 
 	let company;
 

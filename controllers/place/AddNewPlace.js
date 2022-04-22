@@ -1,4 +1,4 @@
-const Place = require('./../../models/Place');
+const { Place } = require('./../../models');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 

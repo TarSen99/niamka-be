@@ -1,8 +1,4 @@
-const Product = require('./../../models/Product');
-const Image = require('./../../models/Image');
-const Place = require('./../../models/Place');
-const Company = require('./../../models/Company');
-const sequelize = require('../../database');
+const { Product, Image, Place, Company } = require('./../../models');
 const { getLocationData } = require('../../helpers/location');
 
 const viewProductDetails = async (req, res) => {

@@ -1,13 +1,8 @@
-const Product = require('../../models/Product');
-const Company = require('../../models/Company');
-const Place = require('../../models/Place');
-const Image = require('../../models/Image');
+const { Product, Company, Place, Image } = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
 const { getLocationData } = require('../../helpers/location');
 const { Sequelize, Op } = require('sequelize');
 const { PRODUCT_STATUSES } = require('../../constants/index.js');
-
-const RADIUS = 10000;
 
 const ORDER_OPTIONS = {
 	date: 'id',
@@ -18,8 +13,11 @@ const ORDER_OPTIONS = {
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
 	const { orderBy = 'date', search = '' } = req.query;
-	const { location } = req.headers;
-	const { distanceAttr, hasLocation } = getLocationData(location);
+	const { location, radius } = req.headers;
+	const { distanceAttr, hasLocation, withinRadius } = getLocationData(
+		location,
+		radius
+	);
 
 	let order;
 	let dir = 'DESC';
@@ -71,13 +69,26 @@ const getProductsList = async (req, res) => {
 				...distanceAttr,
 			},
 			where: {
-				createdAt: {
-					[Op.gt]: new Date(new Date() - 24 * 60 * 60 * 1000),
-				},
-				status: {
-					[Op.in]: [PRODUCT_STATUSES.ACTIVE, PRODUCT_STATUSES.OUT_OF_STOCK],
-				},
-				...searchReq,
+				[Op.and]: [
+					{
+						createdAt: {
+							[Op.gt]: new Date(new Date() - 24 * 60 * 60 * 1000),
+						},
+					},
+					{
+						status: {
+							[Op.in]: [
+								PRODUCT_STATUSES.ACTIVE,
+								PRODUCT_STATUSES.OUT_OF_STOCK,
+								PRODUCT_STATUSES.EXPIRED,
+							],
+						},
+					},
+					{
+						...searchReq,
+					},
+					withinRadius,
+				],
 			},
 			include: [
 				{ model: Company, required: true, duplicating: false },
@@ -85,6 +96,9 @@ const getProductsList = async (req, res) => {
 					model: Place,
 					required: true,
 					duplicating: false,
+					attributes: {
+						// ...distanceAttr,
+					},
 				},
 				Image,
 			],
