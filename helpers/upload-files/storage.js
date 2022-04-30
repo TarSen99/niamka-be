@@ -15,8 +15,6 @@ function MyCustomStorage(opts) {
 
 MyCustomStorage.prototype._handleFile = function (req, file, cb) {
 	this.getDestination(req, file, function (err, bucketname) {
-		console.log('---');
-		console.log(err);
 		const name = path.join(
 			__dirname,
 			`../../public/images/${+Date.now()}-${file.originalname}.jpeg`
@@ -27,11 +25,7 @@ MyCustomStorage.prototype._handleFile = function (req, file, cb) {
 
 		file.stream.pipe(resized).pipe(outStream);
 
-		outStream.on('error', (e) => {
-			console.log('++');
-			console.log(e);
-			cb(e);
-		});
+		outStream.on('error', cb);
 
 		outStream.on('finish', function () {
 			const readStream = fs.createReadStream(name);
