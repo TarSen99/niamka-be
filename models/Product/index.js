@@ -17,6 +17,11 @@ const Product = sequelize.define(
 		description: {
 			type: DataTypes.STRING,
 		},
+		initialCount: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+			defaultValue: 10,
+		},
 		availableCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

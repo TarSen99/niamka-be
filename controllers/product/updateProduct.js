@@ -1,9 +1,19 @@
-const { Product, Place, Image } = require('./../../models');
+const { Product, Image } = require('./../../models');
 const sequelize = require('./../../database');
 const validationSchema = require('./../../helpers/product/schema.js');
 const validate = require('./../../helpers/validate');
 
-const createProduct = async (req, res) => {
+const fields = [
+	'title',
+	'description',
+	'availableCount',
+	'availableCountPerPerson',
+	'fullPrice',
+	'discountPercent',
+	'priceWithDiscount',
+];
+
+const updateProduct = async (req, res) => {
 	const {
 		title,
 		description,
@@ -17,6 +27,7 @@ const createProduct = async (req, res) => {
 		placeId,
 		imagesAsUrl = [],
 	} = req.body;
+	const { productId } = req.params;
 
 	const v = await validate(validationSchema, {
 		title,
@@ -42,43 +53,53 @@ const createProduct = async (req, res) => {
 
 	const productTransaction = await sequelize.transaction();
 
-	const place = await Place.findByPk(placeId);
-
-	if (!place || place.disabled) {
+	try {
+		product = await Product.findByPk(productId, {
+			include: Image,
+		});
+	} catch (e) {
 		await productTransaction.rollback();
-
-		return res.status(404).json({
+		return res.status(400).json({
 			success: false,
 			errors: [
 				{
-					field: 'placeId',
-					error: 'Not found',
+					field: 'id',
+					error: 'Product not found',
 				},
 			],
 		});
 	}
 
 	try {
-		product = await Product.create(
-			{
-				title,
-				description,
-				availableCount,
-				initialCount: availableCount,
-				availableCountPerPerson,
-				fullPrice,
-				discountPercent,
-				priceWithDiscount,
-				takeTimeFrom,
-				takeTimeTo,
-				availableForSale: true,
-				PlaceId: placeId,
-				CompanyId: place.CompanyId,
-			},
-			{
-				transaction: productTransaction,
+		fields.forEach((field) => {
+			product[field] = req.body[field];
+		});
+
+		await product.save({ transaction: productTransaction });
+	} catch (e) {
+		console.log(e);
+		await productTransaction.rollback();
+		return res.status(400).json({
+			success: false,
+			errors: [{ error: e }],
+		});
+	}
+
+	const files = [];
+
+	try {
+		for await (const image of product.Images) {
+			const exists = imagesAsUrl.find((el) => {
+				const imageData = JSON.parse(el);
+				return imageData.id === image.id;
+			});
+
+			if (!exists) {
+				await image.destroy({ transaction: productTransaction });
+			} else {
+				files.push(image.toJSON());
 			}
-		);
+		}
 	} catch (e) {
 		console.log(e);
 		await productTransaction.rollback();
@@ -88,16 +109,11 @@ const createProduct = async (req, res) => {
 		});
 	}
 
-	const imagesUrls = imagesAsUrl.map((el) => {
-		return JSON.parse(el);
-	});
-
-	const images = [...req.files, ...imagesUrls];
-	const files = [];
+	const images = [...req.files];
 
 	for await (const image of images) {
 		try {
-			const url = image.path || image.url;
+			const url = image.path;
 
 			const imageData = await Image.create(
 				{
@@ -127,7 +143,7 @@ const createProduct = async (req, res) => {
 
 	await productTransaction.commit();
 
-	return res.status(201).json({
+	return res.status(200).json({
 		success: true,
 		data: {
 			...product.toJSON(),
@@ -136,4 +152,4 @@ const createProduct = async (req, res) => {
 	});
 };
 
-module.exports = createProduct;
+module.exports = updateProduct;

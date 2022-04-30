@@ -11,16 +11,24 @@ const validationSchema = yup.object().shape({
 		.oneOf(USER_ROLES_ARRAY, 'Role is not valid')
 		.nullable(),
 	employeeId: yup.string().required('Field is required').nullable(),
+	place: yup.string().when('role', (role, schema) => {
+		if (role === USER_ROLES.OWNER || role === USER_ROLES.MANAGER) {
+			return schema;
+		}
+
+		return schema.required('Field is required');
+	}),
 });
 
 const updateEmployee = async (req, res) => {
-	const { name, role } = req.body;
+	const { name, role, place } = req.body;
 	const { employeeId } = req.params;
 
 	const v = await validate(validationSchema, {
 		employeeId,
 		name,
 		role,
+		place,
 	});
 
 	if (role === USER_ROLES.OWNER) {
@@ -62,6 +70,7 @@ const updateEmployee = async (req, res) => {
 
 	roleItem.role = role;
 	employee.name = name;
+	roleItem.placeId = place;
 
 	try {
 		await employee.save();

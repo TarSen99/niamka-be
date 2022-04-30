@@ -31,11 +31,11 @@ const createPayment = async (req, res) => {
 	const priceToFixed = totalPrice.toFixed(2);
 
 	const requestData = {
-		server_callback_url: 'https://78e0-93-175-200-96.eu.ngrok.io/orders/payed',
+		server_callback_url: 'https://27e7-93-175-201-145.eu.ngrok.io/orders/payed',
 		order_id: `#${orderNumber}/${orderId}`,
 		order_desc: `Order #${orderNumber}`,
 		currency: CURRENCY,
-		amount: `${priceToFixed * 100}`,
+		amount: `${(priceToFixed * 100).toFixed(0)}`,
 		required_rectoken: 'Y',
 		delayed: 'Y',
 		merchant_id: MERCHANT_ID,

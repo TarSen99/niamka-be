@@ -1,5 +1,9 @@
 const { User, UsersAndCompanies } = require('./../../models');
-const { USER_ROLES_ARRAY, REGISTER_TYPES } = require('./../../constants');
+const {
+	USER_ROLES_ARRAY,
+	REGISTER_TYPES,
+	USER_ROLES,
+} = require('./../../constants');
 const sequelize = require('./../../database');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
@@ -21,17 +25,25 @@ const validationSchema = yup.object().shape({
 		.string()
 		.required('Field is required')
 		.min(8, 'Password must contain at least 8 characters'),
+	place: yup.string().when('role', (role, schema) => {
+		if (role === USER_ROLES.OWNER || role === USER_ROLES.MANAGER) {
+			return schema;
+		}
+
+		return schema.required('Field is required');
+	}),
 });
 
 const addEmployee = async (req, res) => {
 	const { company_id } = req.headers;
-	const { name, email, password, role } = req.body;
+	const { name, email, password, role, place } = req.body;
 
 	const v = await validate(validationSchema, {
 		name,
 		email,
 		password,
 		role,
+		place,
 	});
 
 	if (!v.valid) {
@@ -109,6 +121,7 @@ const addEmployee = async (req, res) => {
 				UserId: employee.id,
 				CompanyId: company_id,
 				role: role,
+				placeId: place,
 			},
 			{
 				transaction,

@@ -1,10 +1,16 @@
 const { Order, Transaction, OrderProduct, Product } = require('../../models');
-const { ORDER_STATUSES } = require('../../constants/');
+const {
+	ORDER_STATUSES,
+	USER_ROLES,
+	REALTIME_CANCELLED_ORDER_PATH,
+} = require('../../constants/');
 const rollbackProductData = require('../../helpers/product/rollbackProductData.js');
 const refundOrder = require('../../controllers/order/refundOrder.js');
 const sequelize = require('./../../database');
+const writeToDb = require('./../../services/firebase/realTimeDb.js');
 
 const changeOrderStatus = async (req, res) => {
+	const { role } = req.headers;
 	const { orderId } = req.params;
 	const status = req.orderStatus;
 	const order = await Order.findByPk(orderId, {
@@ -42,6 +48,21 @@ const changeOrderStatus = async (req, res) => {
 					},
 				],
 			});
+		}
+
+		if (role === USER_ROLES.CUSTOMER || !role) {
+			writeToDb(
+				REALTIME_CANCELLED_ORDER_PATH.replace(
+					'{placeId}',
+					order.PlaceId
+				).replace('{orderId}', order.id),
+				{
+					data: {
+						...order.toJSON(),
+					},
+					createdAt: new Date(),
+				}
+			);
 		}
 	}
 

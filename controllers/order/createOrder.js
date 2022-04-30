@@ -5,7 +5,9 @@ const {
 	PRODUCT_STATUSES,
 	PAYMENT_METHODS,
 	ORDER_STATUSES,
+	REALTIME_NEW_ORDER_PATH,
 } = require('./../../constants');
+const writeToDb = require('./../../services/firebase/realTimeDb.js');
 
 /*
   products<[]>: {id: INTEGER, quantity: INTEGER}
@@ -213,6 +215,23 @@ const createOrder = async (req, res) => {
 	}
 
 	await transaction.commit();
+
+	if (order.paymentMethod === PAYMENT_METHODS.CASH) {
+		try {
+			writeToDb(
+				REALTIME_NEW_ORDER_PATH.replace('{placeId}', placeId).replace(
+					'{orderId}',
+					order.id
+				),
+				{
+					data: {
+						...order.toJSON(),
+					},
+					createdAt: new Date(),
+				}
+			);
+		} catch (e) {}
+	}
 
 	return res.status(201).json({
 		success: true,

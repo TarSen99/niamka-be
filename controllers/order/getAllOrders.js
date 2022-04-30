@@ -8,6 +8,7 @@ const {
 	Company,
 } = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
+const getStatusFilter = require('../../helpers/statusFilter.js');
 
 const isNull = (v) => {
 	if (!v) {
@@ -20,14 +21,17 @@ const isNull = (v) => {
 const getAllOrders = async (req, res) => {
 	const { placeId, companyId } = req.params;
 	const { offset, limit, meta } = getPagDetails(req.query);
-	const { userid } = req.headers;
+	const { status } = req.query;
+	const { id } = req.headers;
 
-	let customerId = +userid;
+	const statusFilter = getStatusFilter(status);
+
+	let customerId = +id;
 
 	if (isNull(companyId) && isNull(placeId) && isNull(customerId)) {
 		return res.status(200).json({
 			success: true,
-			data: {},
+			data: [],
 			meta: {},
 		});
 	}
@@ -35,11 +39,11 @@ const getAllOrders = async (req, res) => {
 	const filter = {};
 
 	if (placeId) {
-		filter.PlaceId = placeId;
+		filter.PlaceId = +placeId;
 	}
 
 	if (companyId) {
-		filter.CompanyId = companyId;
+		filter.CompanyId = +companyId;
 	}
 
 	if (isNull(companyId) && isNull(placeId)) {
@@ -53,8 +57,15 @@ const getAllOrders = async (req, res) => {
 
 	try {
 		const data = await Order.findAndCountAll({
-			where: filter,
-			include: [OrderProduct, Place, { model: User, as: 'Customer' }, Company],
+			where: { ...filter, ...statusFilter },
+			include: [
+				{
+					model: OrderProduct,
+				},
+				Place,
+				{ model: User, as: 'Customer' },
+				Company,
+			],
 			offset,
 			limit,
 			order: [['createdAt', 'DESC']],
@@ -65,7 +76,7 @@ const getAllOrders = async (req, res) => {
 		count = data.count;
 	} catch (e) {
 		console.log(e);
-		return res.status(500).json({
+		return res.status(400).json({
 			errors: [],
 		});
 	}

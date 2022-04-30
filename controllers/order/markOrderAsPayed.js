@@ -72,8 +72,6 @@ const markOrderAsPayed = async (req, res) => {
 		});
 	}
 
-	// console.log(sender_email);
-
 	if (response_status !== 'success') {
 		return res.status(200).json({
 			success: true,
@@ -128,9 +126,12 @@ const markOrderAsPayed = async (req, res) => {
 		try {
 			await order.save();
 			await order.Transaction.save();
-			await saveUserEmail({ email: sender_email, userId: order.CustomerId });
 
-			await SavedCreditCard.findOrCreate({
+			if (sender_email) {
+				await saveUserEmail({ email: sender_email, userId: order.CustomerId });
+			}
+
+			const el = await SavedCreditCard.findOrCreate({
 				where: {
 					rectoken,
 					UserId: order.CustomerId,

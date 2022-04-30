@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
 			description: {
 				type: DataTypes.STRING,
 			},
+			initialCount: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 			availableCount: {
 				type: DataTypes.INTEGER,
 				allowNull: false,

@@ -4,7 +4,6 @@ const {
 	Company,
 	Place,
 	User,
-	Image,
 	PushToken,
 	ProfileSettings,
 } = require('./../../models');
@@ -36,17 +35,6 @@ const handler = async (data) => {
 	if (!placeData) {
 		throw new Error('No place');
 	}
-
-	// let images;
-	// try {
-	// 	images = await Image.findAll({
-	// 		where: {
-	// 			ProductId: id,
-	// 		},
-	// 	});
-	// } catch (e) {
-	// 	throw e;
-	// }
 
 	const image = company.logo;
 
@@ -100,13 +88,13 @@ const handler = async (data) => {
 	}
 
 	try {
-		for await (const user of users) {
+		for (const user of users) {
 			if (!user.PushTokens || !user.PushTokens.length) {
-				return Promise.resolve();
+				continue;
 			}
 
-			for await (const currToken of user.PushTokens) {
-				await sendMessage({
+			for (const currToken of user.PushTokens) {
+				sendMessage({
 					token: currToken.token,
 					title: `New product from ${company.name}`,
 					body: 'It must be something yummy!',

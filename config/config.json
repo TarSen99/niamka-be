@@ -14,9 +14,9 @@
 		"dialect": "postgres"
 	},
 	"production": {
-		"username": "tarasseniv",
-		"password": null,
-		"database": "tarasseniv",
+		"username": "postgres",
+		"password": "taras41446",
+		"database": "niamka_prod",
 		"host": "localhost",
 		"dialect": "postgres"
 	}

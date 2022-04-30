@@ -3,6 +3,7 @@ const router = express.Router();
 const upload = require('./../helpers/upload-files/multer.js');
 
 const createProduct = require('./../controllers/product/createProduct.js');
+const updateProduct = require('./../controllers/product/updateProduct.js');
 const toggleAvailability = require('./../controllers/product/toggleAvailability.js');
 const viewProductDetails = require('./../controllers/product/viewProductDetails.js');
 const getProductsList = require('./../controllers/product/getProductsList.js');
@@ -22,6 +23,7 @@ const handleUploadFiles = (req, res, next) => {
 
 /* GET users listing. */
 router.post('/add', isLoggedIn, handleUploadFiles, createProduct);
+router.put('/:productId/update', isLoggedIn, handleUploadFiles, updateProduct);
 router.put('/toggle/:id', isLoggedIn, toggleAvailability);
 router.get('/:id', isLoggedIn, viewProductDetails);
 router.get('/', getProductsList);

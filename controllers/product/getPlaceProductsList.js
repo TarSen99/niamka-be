@@ -1,16 +1,20 @@
 const { Product, Image } = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
+const getStatusFilter = require('../../helpers/statusFilter.js');
 
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
+	const { status } = req.query;
 	const { placeId } = req.params;
 
 	let data;
+	const statusFilter = getStatusFilter(status);
 
 	try {
 		data = await Product.findAndCountAll({
 			where: {
 				PlaceId: placeId,
+				...statusFilter,
 			},
 			include: Image,
 			offset,

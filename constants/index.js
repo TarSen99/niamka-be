@@ -51,9 +51,9 @@ const PAYMENT_METHODS = {
 const COMMISION = 10;
 
 // PAYMENTS
-const SECRET = 'test';
+const SECRET = 'TQKfQnUpj5WDo4aCJCDwmLMffCEcsaIB';
 const CURRENCY = 'UAH';
-const MERCHANT_ID = 1396424;
+const MERCHANT_ID = 1445132;
 
 // Async jobs
 const PENDING_ORDER_TIMEOUT = 60 * 10 * 1000;
@@ -64,6 +64,10 @@ const FIREBASE_SERVER_KEY =
 
 const oneKMInDegrees = 0.01;
 const DEFAULT_RADIUS = 10;
+
+const REALTIME_NEW_ORDER_PATH = 'places/_{placeId}/orders/new/_{orderId}';
+const REALTIME_CANCELLED_ORDER_PATH =
+	'places/_{placeId}/orders/cancelled/_{orderId}';
 
 module.exports = {
 	PRODUCT_STATUSES,
@@ -83,4 +87,6 @@ module.exports = {
 	FIREBASE_SERVER_KEY,
 	oneKMInDegrees,
 	DEFAULT_RADIUS,
+	REALTIME_NEW_ORDER_PATH,
+	REALTIME_CANCELLED_ORDER_PATH,
 };
