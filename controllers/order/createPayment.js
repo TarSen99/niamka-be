@@ -31,7 +31,7 @@ const createPayment = async (req, res) => {
 	const priceToFixed = totalPrice.toFixed(2);
 
 	const requestData = {
-		server_callback_url: 'http://18.184.79.221:3000/orders/payed',
+		server_callback_url: 'https://api.niamka.com/orders/payed',
 		order_id: `#${orderNumber}/${orderId}`,
 		order_desc: `Order #${orderNumber}`,
 		currency: CURRENCY,
