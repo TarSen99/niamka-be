@@ -66,7 +66,9 @@ const AddPushToken = async (req, res) => {
 
 	try {
 		existing = await PushToken.findAll({
-			token: tokenValue,
+			where: {
+				token: tokenValue,
+			},
 		});
 
 		existing = existing.map((el) => el.id);
