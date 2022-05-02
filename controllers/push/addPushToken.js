@@ -79,6 +79,8 @@ const AddPushToken = async (req, res) => {
 			});
 		}
 	} catch (e) {
+		console.log('ERR');
+		console.log(e);
 		return res.status(500).json({
 			success: false,
 			errors: [
@@ -97,6 +99,9 @@ const AddPushToken = async (req, res) => {
 			UserId: id,
 		});
 	} catch (e) {
+		console.log('ERR 1');
+		console.log(e);
+
 		return res.status(500).json({
 			success: false,
 			errors: [
