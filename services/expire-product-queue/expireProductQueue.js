@@ -2,11 +2,10 @@ const jobService = require('./../jobService');
 const { ORDER_STATUSES, PRODUCT_STATUSES } = require('../../constants');
 const { Product, Order, OrderProduct } = require('../../models');
 const { DateTime } = require('luxon');
+const sequelize = require('./../../database');
 
 const handler = async (data) => {
 	let product;
-	console.log('+++++++++++++++');
-	console.log(data);
 
 	try {
 		product = await Product.findByPk(data.id, {
