@@ -30,6 +30,8 @@ class JobService {
 	async process(job) {
 		const data = job.data;
 
+		console.log('start process');
+		console.log(job.data._config.name);
 		const handler = this.handlers[job.data._config.name]?.callback;
 
 		if (!handler) {
