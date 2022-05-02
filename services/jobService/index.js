@@ -8,8 +8,6 @@ class JobService {
 			return this.process(job);
 		});
 
-		// callback: callback
-		// delay: callback
 		this.handlers = {};
 	}
 

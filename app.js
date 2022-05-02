@@ -8,6 +8,7 @@ const cors = require('cors');
 // require('./services/expire-product-queue/index.js');
 // require('./services/send-product-notifications/index.js');
 require('./services/send-product-notifications/notificationService.js');
+require('./services/expire-product-queue/expireProductQueue.js');
 
 require('./database');
 
