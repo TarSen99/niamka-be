@@ -61,29 +61,12 @@ const AddPushToken = async (req, res) => {
 
 	let tokenInstance;
 
-	let existing = [];
-
 	try {
-		existing = await PushToken.findAll({
+		await PushToken.destroy({
 			where: {
 				token: tokenValue,
 			},
 		});
-
-		existing = existing.map((el) => el.id);
-
-		console.log('---existing----');
-		console.log(existing);
-
-		if (existing.length) {
-			await PushToken.destroy({
-				where: {
-					id: {
-						[Op.in]: existing,
-					},
-				},
-			});
-		}
 	} catch (e) {
 		return res.status(500).json({
 			success: false,
