@@ -71,10 +71,15 @@ const AddPushToken = async (req, res) => {
 
 		existing = existing.map((el) => el.id);
 
+		console.log('existing');
+		console.log(existing);
+
 		if (existing.length) {
 			await PushToken.destroy({
 				where: {
-					[Op.in]: existing,
+					id: {
+						[Op.in]: existing,
+					},
 				},
 			});
 		}
