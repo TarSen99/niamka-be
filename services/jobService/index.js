@@ -13,14 +13,11 @@ class JobService {
 
 	registerCallback({ name, callback, delay }) {
 		this.handlers[name] = { callback, delay };
-
-		console.log('registered');
-		console.log(name);
 	}
 
 	async pushToQueue(data) {
 		await this.queue.add('main-queue', data, {
-			delay: this.handlers[data._config.name].delay,
+			delay: this.handlers[data._config.name].delay || data._config.delay,
 			removeOnComplete: true,
 		});
 	}

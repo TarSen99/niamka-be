@@ -68,6 +68,10 @@ Product.addHook('afterCreate', async (product) => {
 	const diff = takeTimeToDate.diff(now).toObject();
 	const { milliseconds } = diff;
 
+	console.log('Product created');
+	console.log('Wait');
+	console.log(milliseconds);
+
 	jobService.pushToQueue({
 		...product.toJSON(),
 		_config: { name: config.name, delay: milliseconds },
