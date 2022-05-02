@@ -9,6 +9,7 @@ const cors = require('cors');
 // require('./services/send-product-notifications/index.js');
 require('./services/send-product-notifications/notificationService.js');
 require('./services/expire-product-queue/expireProductQueue.js');
+require('./services/clear-order-queue/clearOrdersQueue.js');
 
 require('./database');
 

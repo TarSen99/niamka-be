@@ -26,9 +26,6 @@ const handler = async (data) => {
 
 	const transaction = await sequelize.transaction();
 
-	console.log('+++++++++++++++');
-	console.log('TRANSACTION');
-
 	product.status = PRODUCT_STATUSES.EXPIRED;
 
 	try {
