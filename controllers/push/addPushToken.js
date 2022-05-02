@@ -47,7 +47,6 @@ const AddPushToken = async (req, res) => {
 			const results = response.data.results;
 			tokenValue = results[0].registration_token;
 		} catch (e) {
-			console.log(e);
 			return res.status(500).json({
 				success: false,
 				errors: [
@@ -73,7 +72,7 @@ const AddPushToken = async (req, res) => {
 
 		existing = existing.map((el) => el.id);
 
-		console.log('existing');
+		console.log('---existing----');
 		console.log(existing);
 
 		if (existing.length) {
@@ -86,8 +85,6 @@ const AddPushToken = async (req, res) => {
 			});
 		}
 	} catch (e) {
-		console.log('ERR');
-		console.log(e);
 		return res.status(500).json({
 			success: false,
 			errors: [
@@ -106,9 +103,6 @@ const AddPushToken = async (req, res) => {
 			UserId: id,
 		});
 	} catch (e) {
-		console.log('ERR 1');
-		console.log(e);
-
 		return res.status(500).json({
 			success: false,
 			errors: [
