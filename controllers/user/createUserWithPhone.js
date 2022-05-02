@@ -87,7 +87,6 @@ const loginUserWithPhone = async (req, res) => {
 
 			profileSettings = profileSettings.toJSON();
 		} else {
-			console.log(user.toJSON());
 			profileSettings = user.ProfileSetting.toJSON();
 		}
 	} catch (e) {

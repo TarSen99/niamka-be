@@ -72,7 +72,6 @@ const payWithRectoken = async (req, res) => {
 		payment = await fondy.Recurring(requestData);
 	} catch (e) {
 		console.log(e);
-		console.log(totalPrice * 100);
 		payTransaction.rollback();
 		return res.status(500).json({
 			field: 'error',

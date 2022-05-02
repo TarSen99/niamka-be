@@ -56,8 +56,8 @@ const CURRENCY = 'UAH';
 const MERCHANT_ID = 1445132;
 
 // Async jobs
-// const PENDING_ORDER_TIMEOUT = 60 * 10 * 1000;
-const PENDING_ORDER_TIMEOUT = 5000;
+const PENDING_ORDER_TIMEOUT = 60 * 5 * 1000;
+// const PENDING_ORDER_TIMEOUT = 5000;
 const REDIS_URL = 'redis://redis_password@localhost:6379';
 
 const FIREBASE_SERVER_KEY =
