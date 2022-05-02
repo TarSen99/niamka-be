@@ -5,6 +5,9 @@ const { DateTime } = require('luxon');
 
 const handler = async (data) => {
 	let product;
+	console.log('+++++++++++++++');
+	console.log(data);
+
 	try {
 		product = await Product.findByPk(data.id, {
 			include: [
@@ -23,6 +26,9 @@ const handler = async (data) => {
 	}
 
 	const transaction = await sequelize.transaction();
+
+	console.log('+++++++++++++++');
+	console.log('TRANSACTION');
 
 	product.status = PRODUCT_STATUSES.EXPIRED;
 
@@ -67,10 +73,6 @@ Product.addHook('afterCreate', async (product) => {
 	const now = DateTime.now();
 	const diff = takeTimeToDate.diff(now).toObject();
 	const { milliseconds } = diff;
-
-	console.log('Product created');
-	console.log('Wait');
-	console.log(milliseconds);
 
 	jobService.pushToQueue({
 		...product.toJSON(),
