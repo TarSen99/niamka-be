@@ -14,7 +14,6 @@ const { oneKMInDegrees } = require('./../../constants/index.js');
 
 const handler = async (data) => {
 	const { CompanyId, id, PlaceId } = data;
-	console.log('start Search');
 
 	try {
 		company = await Company.findByPk(CompanyId, {
@@ -90,9 +89,6 @@ const handler = async (data) => {
 
 	try {
 		for (const user of users) {
-			console.log('User');
-			console.log(user.toJSON());
-
 			if (!user.PushTokens || !user.PushTokens.length) {
 				continue;
 			}

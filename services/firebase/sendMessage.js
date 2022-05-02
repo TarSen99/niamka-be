@@ -1,5 +1,18 @@
 const { getMessaging } = require('firebase-admin/messaging');
 const app = require('./index.js');
+const { isNull } = require('./../../helpers/index.js');
+
+const getImage = (image) => {
+	const imageUrl = isNull(image) ? null : image;
+
+	if (imageUrl) {
+		return {
+			imageUrl,
+		};
+	}
+
+	return {};
+};
 
 const sendMessage = async ({ token, title, body, data, image }) => {
 	return await getMessaging(app).sendAll([
@@ -16,7 +29,7 @@ const sendMessage = async ({ token, title, body, data, image }) => {
 					},
 				},
 				fcmOptions: {
-					imageUrl: image,
+					...getImage(image),
 				},
 			},
 			data,
@@ -28,7 +41,7 @@ const sendMessage = async ({ token, title, body, data, image }) => {
 			notification: {
 				title,
 				body,
-				imageUrl: image,
+				...getImage(image),
 			},
 			token: token,
 		},
