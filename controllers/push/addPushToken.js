@@ -3,6 +3,7 @@ const validate = require('./../../helpers/validate');
 const { PushToken } = require('./../../models');
 const { FIREBASE_SERVER_KEY } = require('./../../constants');
 const axios = require('axios').default;
+const { Op } = require('sequelize');
 
 const validationSchema = yup.object().shape({
 	type: yup.string().required('Field is required').nullable(),
@@ -60,6 +61,34 @@ const AddPushToken = async (req, res) => {
 	}
 
 	let tokenInstance;
+
+	let existing = [];
+
+	try {
+		existing = await PushToken.findAll({
+			token: tokenValue,
+		});
+
+		existing = existing.map((el) => el.id);
+
+		if (existing.length) {
+			await PushToken.destroy({
+				where: {
+					[Op.in]: existing,
+				},
+			});
+		}
+	} catch (e) {
+		return res.status(500).json({
+			success: false,
+			errors: [
+				{
+					field: 'e',
+					error: e,
+				},
+			],
+		});
+	}
 
 	try {
 		tokenInstance = await PushToken.create({

@@ -68,7 +68,7 @@ const getAllOrders = async (req, res) => {
 			],
 			offset,
 			limit,
-			order: [['createdAt', 'DESC']],
+			order: [['updatedAt', 'DESC']],
 			distinct: true,
 		});
 
