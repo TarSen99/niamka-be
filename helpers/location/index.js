@@ -3,16 +3,6 @@ const { Sequelize } = require('sequelize');
 
 const oneKM = 0.01;
 
-const getDistanceWithCoef = (distance) => {
-	if (!distance) {
-		return null;
-	}
-
-	const additional = (distance / 100) * 20;
-
-	return additional + distance;
-};
-
 const getLocationData = (locationData, radius) => {
 	const currLocation = JSON.parse(locationData || '{}') || {};
 
@@ -80,7 +70,7 @@ const getLocationData = (locationData, radius) => {
 		);
 	}
 
-	return { distanceAttr, hasLocation, withinRadius };
+	return { distanceAttr, hasLocation, withinRadius, currRadius, currLocation };
 };
 
 module.exports = {

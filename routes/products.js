@@ -8,6 +8,7 @@ const toggleAvailability = require('./../controllers/product/toggleAvailability.
 const viewProductDetails = require('./../controllers/product/viewProductDetails.js');
 const getProductsList = require('./../controllers/product/getProductsList.js');
 const DeletePlace = require('./../controllers/place/DeletePlace.js');
+const getNearestProducts = require('./../controllers/product/getNearestProducts.js');
 
 const isLoggedIn = require('../middleware/isLoggedIn.js');
 
@@ -22,11 +23,13 @@ const handleUploadFiles = (req, res, next) => {
 };
 
 /* GET users listing. */
+router.get('/nearest', getNearestProducts);
+router.get('/', getProductsList);
+
 router.post('/add', isLoggedIn, handleUploadFiles, createProduct);
 router.put('/:productId/update', isLoggedIn, handleUploadFiles, updateProduct);
 router.put('/toggle/:id', isLoggedIn, toggleAvailability);
 router.get('/:id', isLoggedIn, viewProductDetails);
-router.get('/', getProductsList);
 router.delete('/:placeId', isLoggedIn, DeletePlace);
 
 module.exports = router;
