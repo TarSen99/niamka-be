@@ -1,6 +1,7 @@
 const { Company } = require('./../../models');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
+const { ESTABLISHMENT_TYPES_AS_ARRAY } = require('./../../constants');
 
 const validationSchema = yup.object().shape({
 	id: yup.string().required('Field is required').nullable(),
@@ -8,13 +9,25 @@ const validationSchema = yup.object().shape({
 		.string()
 		.required('Field is required')
 		.nullable()
-		.max(40, 'Max length is 100'),
+		.max(40, 'Max length is 40'),
+	description: yup.string().max(250, 'Max length is 250 characters').nullable(),
 	instagram: yup.string().nullable().max(100, 'Max length is 100'),
 	facebook: yup.string().nullable().max(100, 'Max length is 100'),
+	type: yup
+		.string()
+		.required('Field is required')
+		.oneOf(ESTABLISHMENT_TYPES_AS_ARRAY, 'Type is not valid'),
 });
 
 const updateCompany = async (req, res) => {
-	const { name, instagram, facebook, id: companyId } = req.body;
+	const {
+		name,
+		instagram,
+		facebook,
+		id: companyId,
+		type,
+		description,
+	} = req.body;
 	const image = req.file;
 
 	const v = await validate(validationSchema, {
@@ -22,6 +35,8 @@ const updateCompany = async (req, res) => {
 		instagram,
 		facebook,
 		id: companyId,
+		type,
+		description,
 	});
 
 	if (!v.valid) {
@@ -37,6 +52,8 @@ const updateCompany = async (req, res) => {
 				name,
 				instagram,
 				facebook,
+				type,
+				description,
 			},
 			{
 				where: {

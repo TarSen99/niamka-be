@@ -1,12 +1,12 @@
 const app = require('./../../services/firebase');
 const { User, ProfileSettings } = require('./../../models');
-const { writeCookie } = require('./../../helpers/cookie');
 const { getAuth } = require('firebase-admin/auth');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 const getDbErrors = require('./../../helpers/validate/getDbErrors.js');
 const { DEFAULT_RADIUS } = require('./../../constants');
 const sequelize = require('./../../database');
+const { encrypt } = require('./../../helpers/encrypt');
 
 const validationSchema = yup.object().shape({
 	name: yup.string().required('Field is required').nullable(),
@@ -110,10 +110,17 @@ const creatUser = async (req, res) => {
 
 	await transaction.commit();
 
-	writeCookie(res, 'data', user.id);
+	// writeCookie(res, 'data', user.id);
+
+	const secretData = {
+		userId: user.id,
+	};
+
+	const encrypted = encrypt(JSON.stringify(secretData));
 
 	return res.status(200).json({
 		success: true,
+		encrypted,
 		data: {
 			...user.toJSON(),
 			ProfileSetting: ProfileSetting.toJSON(),

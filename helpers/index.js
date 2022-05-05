@@ -34,8 +34,16 @@ const waitTime = (time, preMillis = 0) => {
 	return milliseconds;
 };
 
+const addTimeToNow = (h) => {
+	const now = DateTime.now();
+	const plus2h = now.plus({ hours: h || 2 });
+
+	return plus2h.toISO();
+};
+
 module.exports = {
 	isNull,
 	getProductsPickupDate,
 	waitTime,
+	addTimeToNow,
 };

@@ -1,19 +1,32 @@
 const { Company, UsersAndCompanies, Place } = require('./../../models');
-const { USER_ROLES } = require('./../../constants');
+const {
+	USER_ROLES,
+	ESTABLISHMENT_TYPES,
+	ESTABLISHMENT_TYPES_AS_ARRAY,
+} = require('./../../constants');
 const sequelize = require('./../../database');
-const { writeCookie } = require('./../../helpers/cookie');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
+const { encrypt } = require('./../../helpers/encrypt');
 
 const validationSchema = yup.object().shape({
-	name: yup.string().required('Field is required').nullable(),
+	name: yup
+		.string()
+		.required('Field is required')
+		.max(50, 'Max length is 50 characters')
+		.nullable(),
+	description: yup.string().max(250, 'Max length is 250 characters').nullable(),
 	latitude: yup.string().required('Field is required').nullable(),
 	longtitude: yup.string().required('Field is required').nullable(),
 	address: yup.string().required('Field is required').nullable(),
+	type: yup
+		.string()
+		.required('Field is required')
+		.oneOf(ESTABLISHMENT_TYPES_AS_ARRAY, 'Type is not valid'),
 });
 
 const registerCompany = async (req, res) => {
-	const { name, latitude, longtitude, address, logo } = req.body;
+	const { name, latitude, longtitude, address, type, description } = req.body;
 	const { id } = req.headers;
 	const image = req.file;
 
@@ -22,6 +35,8 @@ const registerCompany = async (req, res) => {
 		latitude,
 		longtitude,
 		address,
+		type,
+		description,
 	});
 
 	if (!v.valid) {
@@ -40,6 +55,8 @@ const registerCompany = async (req, res) => {
 			{
 				name: name,
 				logo: image?.path || null,
+				type,
+				description,
 			},
 			{
 				transaction,
@@ -100,11 +117,20 @@ const registerCompany = async (req, res) => {
 	}
 	await transaction.commit();
 
-	writeCookie(res, 'role', USER_ROLES.OWNER);
-	writeCookie(res, 'companyId', company.id);
+	// writeCookie(res, 'role', USER_ROLES.OWNER);
+	// writeCookie(res, 'companyId', company.id);
+
+	const secretData = {
+		userId: id,
+		companyId: company.id,
+		role: relation.role,
+	};
+
+	const encrypted = encrypt(JSON.stringify(secretData));
 
 	return res.status(201).json({
 		success: true,
+		encrypted,
 		data: {
 			company: {
 				...company.toJSON(),

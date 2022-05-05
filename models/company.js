@@ -18,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
 			instagram: DataTypes.STRING,
 			facebook: DataTypes.STRING,
 			logo: DataTypes.STRING,
+			type: DataTypes.STRING,
+			description: DataTypes.STRING,
 		},
 		{
 			sequelize,

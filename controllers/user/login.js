@@ -3,7 +3,7 @@ const { User, Company, ProfileSettings } = require('./../../models');
 const { getAuth } = require('firebase-admin/auth');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
-const { writeCookie } = require('./../../helpers/cookie');
+const { encrypt } = require('./../../helpers/encrypt');
 const { Op } = require('sequelize');
 
 const validationSchema = yup.object().shape({
@@ -81,13 +81,22 @@ const login = async (req, res) => {
 	const company = (user.Companies && user.Companies[0]) || {};
 	const role = company.UsersAndCompanies?.role;
 
-	writeCookie(res, 'data', user.id);
-	writeCookie(res, 'role', role);
-	writeCookie(res, 'companyId', company.id);
+	// writeCookie(res, 'data', user.id);
+	// writeCookie(res, 'role', role);
+	// writeCookie(res, 'companyId', company.id);
+
+	const secretData = {
+		userId: user.id,
+		companyId: company.id,
+		role: role,
+	};
+
+	const encypted = encrypt(JSON.stringify(secretData));
 
 	return res.status(200).json({
 		success: true,
 		data: user.toJSON(),
+		encypted,
 	});
 };
 

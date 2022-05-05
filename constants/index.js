@@ -70,7 +70,15 @@ const REALTIME_NEW_ORDER_PATH = 'places/_{placeId}/orders/new/_{orderId}';
 const REALTIME_CANCELLED_ORDER_PATH =
 	'places/_{placeId}/orders/cancelled/_{orderId}';
 
+const ESTABLISHMENT_TYPES = {
+	STORE: 'store',
+	RESTAURANT: 'restaurant',
+};
+
+const ESTABLISHMENT_TYPES_AS_ARRAY = ['store', 'restaurant'];
+
 module.exports = {
+	ESTABLISHMENT_TYPES_AS_ARRAY,
 	PRODUCT_STATUSES,
 	USER_ROLES,
 	ORDER_STATUSES,
@@ -90,4 +98,5 @@ module.exports = {
 	DEFAULT_RADIUS,
 	REALTIME_NEW_ORDER_PATH,
 	REALTIME_CANCELLED_ORDER_PATH,
+	ESTABLISHMENT_TYPES,
 };

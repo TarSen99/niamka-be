@@ -6,6 +6,7 @@ const validate = require('../../helpers/validate');
 const getDbErrors = require('../../helpers/validate/getDbErrors.js');
 const sequelize = require('./../../database');
 const { DEFAULT_RADIUS } = require('./../../constants');
+const { encrypt } = require('./../../helpers/encrypt');
 
 const validationSchema = yup.object().shape({
 	token: yup.string().required('Field is required').nullable(),
@@ -100,12 +101,19 @@ const loginUserWithPhone = async (req, res) => {
 
 	await transaction.commit();
 
+	const secretData = {
+		userId: user.id,
+	};
+
+	const encypted = encrypt(JSON.stringify(secretData));
+
 	return res.status(200).json({
 		success: true,
 		data: {
 			...user.toJSON(),
 			ProfileSetting: profileSettings,
 		},
+		encypted,
 	});
 };
 

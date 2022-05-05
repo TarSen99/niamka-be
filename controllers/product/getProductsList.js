@@ -3,6 +3,9 @@ const { getPagDetails } = require('../../helpers/pagination');
 const { getLocationData } = require('../../helpers/location');
 const { Sequelize, Op } = require('sequelize');
 const { PRODUCT_STATUSES } = require('../../constants/index.js');
+const { addTimeToNow } = require('../../helpers/index.js');
+
+const HOT_DISCOUNT_PERCENT_MIN = 60;
 
 const ORDER_OPTIONS = {
 	date: 'id',
@@ -10,19 +13,86 @@ const ORDER_OPTIONS = {
 	distance: 'distance',
 };
 
+const FILTERS = {
+	hot: 'hot',
+	hurry_to_take: 'hurry_to_take',
+	popular: 'popular',
+};
+
+const getFilterQuery = (filter) => {
+	if (!FILTERS[filter]) {
+		return {
+			where: {},
+			order: [],
+		};
+	}
+
+	if (filter === FILTERS.hot) {
+		return {
+			where: {
+				discountPercent: {
+					[Op.gt]: HOT_DISCOUNT_PERCENT_MIN,
+				},
+				status: 'active',
+			},
+			order: [['discountPercent', 'DESC']],
+		};
+	}
+
+	if (filter === FILTERS.hurry_to_take) {
+		const maxTime = addTimeToNow(2);
+		return {
+			where: {
+				takeTimeTo: {
+					[Op.lt]: maxTime,
+				},
+				status: 'active',
+			},
+			order: [['takeTimeTo', 'ASC']],
+		};
+	}
+
+	if (filter === FILTERS.popular) {
+		return {
+			where: {
+				availableCount: {
+					[Op.lt]: Sequelize.col('initialCount'),
+				},
+				status: 'active',
+			},
+			order: [
+				[
+					Sequelize.literal(
+						'("Product"."initialCount" - "Product"."availableCount")'
+					),
+					'DESC',
+				],
+			],
+		};
+	}
+};
+
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
-	const { orderBy = 'date', search = '' } = req.query;
+	const { orderBy = 'date', search = '', filter } = req.query;
 	const { location, radius } = req.headers;
 	const { distanceAttr, hasLocation, withinRadius } = getLocationData(
 		location,
 		radius
 	);
 
+	let filters = {
+		where: {},
+		order: [],
+	};
 	let order;
 	let dir = 'DESC';
 	let orderObj = [];
 	let searchReq = {};
+
+	if (filter) {
+		filters = getFilterQuery(filter);
+	}
 
 	if (ORDER_OPTIONS[orderBy]) {
 		order = ORDER_OPTIONS[orderBy];
@@ -60,6 +130,12 @@ const getProductsList = async (req, res) => {
 
 	let data;
 
+	let orderResult = [orderObj];
+
+	if (filters.order.length) {
+		orderResult = filters.order;
+	}
+
 	try {
 		data = await Product.findAndCountAll({
 			distinct: true,
@@ -88,6 +164,9 @@ const getProductsList = async (req, res) => {
 						...searchReq,
 					},
 					withinRadius,
+					{
+						...filters.where,
+					},
 				],
 			},
 			include: [
@@ -102,7 +181,7 @@ const getProductsList = async (req, res) => {
 				},
 				Image,
 			],
-			order: [orderObj],
+			order: orderResult,
 		});
 	} catch (e) {
 		console.log(e);
