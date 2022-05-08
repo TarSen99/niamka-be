@@ -16,6 +16,7 @@ const createProduct = async (req, res) => {
 		takeTimeTo,
 		placeId,
 		imagesAsUrl = [],
+		productType,
 	} = req.body;
 
 	const v = await validate(validationSchema, {
@@ -29,6 +30,7 @@ const createProduct = async (req, res) => {
 		takeTimeFrom,
 		takeTimeTo,
 		placeId,
+		productType,
 	});
 
 	if (!v.valid) {
@@ -58,10 +60,18 @@ const createProduct = async (req, res) => {
 		});
 	}
 
+	let productTitle;
+
+	if (productType === 'regular') {
+		productTitle = title;
+	} else {
+		productTitle = 'Niambox';
+	}
+
 	try {
 		product = await Product.create(
 			{
-				title,
+				title: productTitle,
 				description,
 				availableCount,
 				initialCount: availableCount,
@@ -74,6 +84,7 @@ const createProduct = async (req, res) => {
 				availableForSale: true,
 				PlaceId: placeId,
 				CompanyId: place.CompanyId,
+				productType,
 			},
 			{
 				transaction: productTransaction,

@@ -1,14 +1,13 @@
 const sequelize = require('../../database');
 const { Sequelize } = require('sequelize');
-
-const oneKM = 0.01;
+const { oneKMInDegrees } = require('./../../constants/index.js');
 
 const getLocationData = (locationData, radius) => {
 	const currLocation = JSON.parse(locationData || '{}') || {};
 
 	let distanceAttr = {};
 	let withinRadius = {};
-	let currRadius = radius * oneKM;
+	let currRadius = radius * oneKMInDegrees;
 
 	const hasLocation = Object.keys(currLocation).length;
 
@@ -48,7 +47,7 @@ const getLocationData = (locationData, radius) => {
 				 (SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") * 0.2) )`
 			),
 			'<',
-			currRadius * 0.9
+			currRadius
 			// sequelize.literal(
 			// 	`ST_DWithin("Place"."location", ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), ${currRadius * 0.9})`
 			// ),

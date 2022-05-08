@@ -59,7 +59,7 @@ const getNearestProducts = async (req, res) => {
                                  (SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") * 0.2) )`
 						),
 						'>',
-						currRadius * 0.9
+						currRadius
 					),
 				],
 			},

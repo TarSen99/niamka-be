@@ -63,7 +63,7 @@ const REDIS_URL = 'redis://redis_password@localhost:6379';
 const FIREBASE_SERVER_KEY =
 	'AAAA8I0YBSc:APA91bEbDoCmlVxBrLUHEQtEXn7UyVpuzZUL-91df8vAJiRwbiDDYyDvytrCpbZobmNl7R5knVlddCuHwjpHxtlB34YtRM-cGKkbhYOO91PSGKQRWpwIGVkt9X_a73O5gHvqeZT0-Kfg';
 
-const oneKMInDegrees = 0.01;
+const oneKMInDegrees = 0.0115;
 const DEFAULT_RADIUS = 10;
 
 const REALTIME_NEW_ORDER_PATH = 'places/_{placeId}/orders/new/_{orderId}';
@@ -76,6 +76,11 @@ const ESTABLISHMENT_TYPES = {
 };
 
 const ESTABLISHMENT_TYPES_AS_ARRAY = ['store', 'restaurant'];
+
+const PRODUCT_TYPES = {
+	NIAMBOX: 'niambox',
+	REGULAR: 'regular',
+};
 
 module.exports = {
 	ESTABLISHMENT_TYPES_AS_ARRAY,
@@ -99,4 +104,5 @@ module.exports = {
 	REALTIME_NEW_ORDER_PATH,
 	REALTIME_CANCELLED_ORDER_PATH,
 	ESTABLISHMENT_TYPES,
+	PRODUCT_TYPES,
 };

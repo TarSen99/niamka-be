@@ -25,10 +25,14 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			title: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			description: {
 				type: DataTypes.STRING,
+			},
+			productType: {
+				type: DataTypes.STRING,
+				defaultValue: 'regular',
 			},
 			initialCount: {
 				type: DataTypes.INTEGER,

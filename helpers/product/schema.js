@@ -1,7 +1,16 @@
 const yup = require('yup');
 
 const validationSchema = yup.object().shape({
-	title: yup.string().required('Field is required').nullable(),
+	title: yup
+		.string()
+		.when('productType', (productType, schema) => {
+			if (productType === 'regular') {
+				return schema.required('Field is required');
+			}
+
+			return schema;
+		})
+		.nullable(true),
 	description: yup
 		.string()
 		.required('Field is required')
@@ -38,6 +47,11 @@ const validationSchema = yup.object().shape({
 		.typeError('Field must be a number')
 		.positive('Must be more than 0')
 		.required('Field is required')
+		.nullable(),
+	productType: yup
+		.string()
+		.required('Field is required')
+		.max(30, 'Max length 30 characters')
 		.nullable(),
 	takeTimeFrom: yup.string().required('Field is required').nullable(),
 	takeTimeTo: yup.string().required('Field is required').nullable(),

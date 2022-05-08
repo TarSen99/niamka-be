@@ -4,8 +4,9 @@ const { getLocationData } = require('../../helpers/location');
 const { Sequelize, Op } = require('sequelize');
 const { PRODUCT_STATUSES } = require('../../constants/index.js');
 const { addTimeToNow } = require('../../helpers/index.js');
+const e = require('express');
 
-const HOT_DISCOUNT_PERCENT_MIN = 60;
+const HOT_DISCOUNT_PERCENT_MIN = 59;
 
 const ORDER_OPTIONS = {
 	date: 'id',
@@ -72,9 +73,69 @@ const getFilterQuery = (filter) => {
 	}
 };
 
+const getSearchFilters = ({ status = '', type = '', product_type = '' }) => {
+	const result = [];
+	const companyResult = [];
+	const statusValue = status
+		.replace(
+			'all',
+			`${PRODUCT_STATUSES.ACTIVE},${PRODUCT_STATUSES.OUT_OF_STOCK},${PRODUCT_STATUSES.EXPIRED}`
+		)
+		.split(',')
+		.filter((el) => !!el);
+	const typeValue = type.split(',').filter((el) => !!el);
+	const product_typeValue = product_type.split(',').filter((el) => !!el);
+
+	if (statusValue.length) {
+		result.push({
+			status: {
+				[Op.in]: statusValue,
+			},
+		});
+	} else {
+		result.push({
+			status: {
+				[Op.in]: [
+					PRODUCT_STATUSES.ACTIVE,
+					PRODUCT_STATUSES.OUT_OF_STOCK,
+					PRODUCT_STATUSES.EXPIRED,
+				],
+			},
+		});
+	}
+
+	if (typeValue.length) {
+		companyResult.push({
+			type: {
+				[Op.in]: typeValue,
+			},
+		});
+	}
+
+	if (product_typeValue.length) {
+		result.push({
+			productType: {
+				[Op.in]: product_typeValue,
+			},
+		});
+	}
+
+	return {
+		product: result,
+		company: companyResult,
+	};
+};
+
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
-	const { orderBy = 'date', search = '', filter } = req.query;
+	const {
+		orderBy = 'date',
+		search = '',
+		filter,
+		status,
+		type,
+		product_type,
+	} = req.query;
 	const { location, radius } = req.headers;
 	const { distanceAttr, hasLocation, withinRadius } = getLocationData(
 		location,
@@ -85,6 +146,9 @@ const getProductsList = async (req, res) => {
 		where: {},
 		order: [],
 	};
+
+	const searchFilters = getSearchFilters({ status, type, product_type });
+
 	let order;
 	let dir = 'DESC';
 	let orderObj = [];
@@ -151,26 +215,23 @@ const getProductsList = async (req, res) => {
 							[Op.gt]: new Date(new Date() - 24 * 60 * 60 * 1000),
 						},
 					},
-					{
-						status: {
-							[Op.in]: [
-								PRODUCT_STATUSES.ACTIVE,
-								PRODUCT_STATUSES.OUT_OF_STOCK,
-								PRODUCT_STATUSES.EXPIRED,
-							],
-						},
-					},
-					{
-						...searchReq,
-					},
+					searchReq,
 					withinRadius,
+					...searchFilters.product,
 					{
 						...filters.where,
 					},
 				],
 			},
 			include: [
-				{ model: Company, required: true, duplicating: false },
+				{
+					model: Company,
+					required: true,
+					duplicating: false,
+					where: {
+						...searchFilters.company[0],
+					},
+				},
 				{
 					model: Place,
 					required: true,

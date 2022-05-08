@@ -2,6 +2,7 @@ const { Product, Image } = require('./../../models');
 const sequelize = require('./../../database');
 const validationSchema = require('./../../helpers/product/schema.js');
 const validate = require('./../../helpers/validate');
+const { PRODUCT_TYPES } = require('./../../constants/index.js');
 
 const fields = [
 	'title',
@@ -24,6 +25,7 @@ const updateProduct = async (req, res) => {
 		priceWithDiscount,
 		takeTimeFrom,
 		takeTimeTo,
+		productType,
 		placeId,
 		imagesAsUrl = [],
 	} = req.body;
@@ -40,6 +42,7 @@ const updateProduct = async (req, res) => {
 		takeTimeFrom,
 		takeTimeTo,
 		placeId,
+		productType,
 	});
 
 	if (!v.valid) {
@@ -68,6 +71,10 @@ const updateProduct = async (req, res) => {
 				},
 			],
 		});
+	}
+
+	if (product.productType === PRODUCT_TYPES.NIAMBOX) {
+		delete fields.title;
 	}
 
 	try {
