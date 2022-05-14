@@ -24,9 +24,6 @@ const handler = async (data) => {
 			tokens.push(...tokensValue);
 		}
 
-		console.log(data.orderNumber);
-		console.log(tokensValue);
-
 		for (const token of tokens) {
 			sendMessage({
 				token: token.token,
