@@ -74,11 +74,16 @@ const changeOrderStatus = async (req, res) => {
 			);
 		} else {
 			try {
+				console.log('Try cancel');
+				console.log(order.CustomerId);
+				console.log(order.Company.name);
 				const tokens = await PushToken.findAll({
 					where: {
 						UserId: order.CustomerId,
 					},
 				});
+
+				console.log(tokens);
 
 				for (const token of tokens) {
 					sendMessage({

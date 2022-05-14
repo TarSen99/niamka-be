@@ -97,7 +97,7 @@ const handler = async (data) => {
 				sendMessage({
 					token: currToken.token,
 					title: `Новий продукт від ${company.name}`,
-					body: `Привіт! В ${company.name} з’явився новий продукт зі знижкою ${discountPercent}%. Хутчіш заходь і замовляй.!`,
+					body: `Привіт! ${company.name} пропонує продукт зі знижкою ${discountPercent}%. Хутчіш заходь і замовляй!`,
 					image,
 					data: {
 						type: 'product',
