@@ -95,7 +95,6 @@ const changeOrderStatus = async (req, res) => {
 			} catch (e) {
 				console.log('Error');
 				console.log(e);
-				console.log(e);
 			}
 		}
 	}
