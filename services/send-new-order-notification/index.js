@@ -30,11 +30,11 @@ const handler = async (data) => {
 		for (const token of tokens) {
 			sendMessage({
 				token: token.token,
-				title: `Нове замовлення ${order.orderNumber}`,
+				title: `Нове замовлення ${data.orderNumber}`,
 				body: `Відкрийте додаток, щоб перевірити деталі`,
 				data: {
 					type: 'new_order',
-					id: '' + order.id,
+					id: '' + data.id,
 				},
 			});
 		}
