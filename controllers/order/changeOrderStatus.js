@@ -83,8 +83,8 @@ const changeOrderStatus = async (req, res) => {
 				for (const token of tokens) {
 					sendMessage({
 						token: token.token,
-						title: `Нам шкода, але ${order.Company.name} скасували твоє замовлення`,
-						body: `Заходь в додаток і перевір, що зараз є доступно для замовлення.`,
+						title: `Скасування замовлення`,
+						body: `Нам шкода, але ${order.Company.name} скасували твоє замовлення.`,
 						image: order.Company.logo,
 						data: {
 							type: 'order_cancelled',
@@ -92,10 +92,7 @@ const changeOrderStatus = async (req, res) => {
 						},
 					});
 				}
-			} catch (e) {
-				console.log('Error');
-				console.log(e);
-			}
+			} catch (e) {}
 		}
 	}
 

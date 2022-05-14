@@ -12,6 +12,8 @@ const handler = async (data) => {
 	try {
 		let tokens = [];
 
+		console.log('----');
+
 		for await (const entity of employeesData) {
 			const tokensValue = await PushToken.findAll({
 				where: {
@@ -21,6 +23,9 @@ const handler = async (data) => {
 
 			tokens.push(...tokensValue);
 		}
+
+		console.log(order.orderNumber);
+		console.log(tokensValue);
 
 		for (const token of tokens) {
 			sendMessage({
@@ -34,6 +39,8 @@ const handler = async (data) => {
 			});
 		}
 	} catch (e) {
+		console.log('Error');
+		console.log(e);
 		throw e;
 	}
 };
