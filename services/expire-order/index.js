@@ -55,7 +55,7 @@ const pushToQueue = (order) => {
 	jobService.pushToQueue({
 		...order,
 		// cancel order after 2 hours
-		_config: { name: config.name, delay: 1000 },
+		_config: { name: config.name, delay: 1000 * 60 * 60 * 2 },
 	});
 };
 

@@ -12,8 +12,6 @@ const handler = async (data) => {
 	try {
 		let tokens = [];
 
-		console.log('----');
-
 		for await (const entity of employeesData) {
 			const tokensValue = await PushToken.findAll({
 				where: {
@@ -24,12 +22,10 @@ const handler = async (data) => {
 			tokens.push(...tokensValue);
 		}
 
-		console.log(tokens);
-
 		for (const token of tokens) {
 			sendMessage({
 				token: token.token,
-				title: `Нове замовлення ${data.orderNumber}`,
+				title: `Нове замовлення #${data.orderNumber}`,
 				body: `Відкрийте додаток, щоб перевірити деталі`,
 				data: {
 					type: 'new_order',
