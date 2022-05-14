@@ -13,7 +13,7 @@ const sequelize = require('./../../database');
 const { oneKMInDegrees } = require('./../../constants/index.js');
 
 const handler = async (data) => {
-	const { CompanyId, id, PlaceId } = data;
+	const { CompanyId, id, PlaceId, discountPercent } = data;
 
 	try {
 		company = await Company.findByPk(CompanyId, {
@@ -96,8 +96,8 @@ const handler = async (data) => {
 			for (const currToken of user.PushTokens) {
 				sendMessage({
 					token: currToken.token,
-					title: `New product from ${company.name}`,
-					body: 'It must be something yummy!',
+					title: `Новий продукт від ${company.name}`,
+					body: `Привіт! В ${company.name} з’явився новий продукт зі знижкою ${discountPercent}%. Хутчіш заходь і замовляй.!`,
 					image,
 					data: {
 						type: 'product',

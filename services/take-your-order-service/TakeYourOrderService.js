@@ -64,8 +64,8 @@ const handler = async (data) => {
 		for (const currToken of user.PushTokens) {
 			sendMessage({
 				token: currToken.token,
-				title: `Order from ${order.Company.name}`,
-				body: `Please take your order #${order.orderNumber} in 30 minutes.`,
+				title: `Спливає час до закінчення терміну замовлення.`,
+				body: `#${order.orderNumber} Поспіши, будь ласка, щоб встигнути забрати свої смаколики.`,
 				image: order.Company.logo,
 				data: {
 					type: 'order',

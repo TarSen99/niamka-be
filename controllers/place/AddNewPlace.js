@@ -10,7 +10,7 @@ const validationSchema = yup.object().shape({
 
 const registerCompany = async (req, res) => {
 	const { latitude, longtitude, address } = req.body;
-	const { company_id } = req.headers;
+	const { companyId } = req.headers;
 
 	const v = await validate(validationSchema, {
 		latitude,
@@ -35,7 +35,7 @@ const registerCompany = async (req, res) => {
 			address,
 			// latitude,
 			// longtitude,
-			CompanyId: company_id,
+			CompanyId: companyId,
 		});
 	} catch (e) {
 		console.log(e);

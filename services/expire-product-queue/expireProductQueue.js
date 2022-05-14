@@ -3,6 +3,7 @@ const { ORDER_STATUSES, PRODUCT_STATUSES } = require('../../constants');
 const { Product, Order, OrderProduct } = require('../../models');
 const { DateTime } = require('luxon');
 const sequelize = require('./../../database');
+const expireOrder = require('./../../services/expire-order');
 
 const handler = async (data) => {
 	let product;
@@ -20,9 +21,9 @@ const handler = async (data) => {
 		throw e;
 	}
 
-	if (product.status === PRODUCT_STATUSES.OUT_OF_STOCK) {
-		return;
-	}
+	// if (product.status === PRODUCT_STATUSES.OUT_OF_STOCK) {
+	// 	return;
+	// }
 
 	const transaction = await sequelize.transaction();
 
@@ -37,14 +38,14 @@ const handler = async (data) => {
 
 	for await (const orderProduct of product.OrderProducts) {
 		let order = orderProduct.Order;
+
 		try {
 			if (
 				order.status === ORDER_STATUSES.ACTIVE ||
 				order.status === ORDER_STATUSES.TO_TAKE ||
 				order.status === ORDER_STATUSES.PAYED
 			) {
-				order.status = ORDER_STATUSES.EXPIRED;
-				await order.save({ transaction });
+				expireOrder(order.toJSON());
 			}
 		} catch (e) {
 			await transaction.rollback();

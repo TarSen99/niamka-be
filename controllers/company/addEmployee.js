@@ -35,7 +35,7 @@ const validationSchema = yup.object().shape({
 });
 
 const addEmployee = async (req, res) => {
-	const { company_id } = req.headers;
+	const { companyId } = req.headers;
 	const { name, email, password, role, place } = req.body;
 
 	const v = await validate(validationSchema, {
@@ -119,7 +119,7 @@ const addEmployee = async (req, res) => {
 		relation = await UsersAndCompanies.create(
 			{
 				UserId: employee.id,
-				CompanyId: company_id,
+				CompanyId: companyId,
 				role: role,
 				placeId: place,
 			},
@@ -129,6 +129,8 @@ const addEmployee = async (req, res) => {
 		);
 	} catch (e) {
 		await transaction.rollback();
+
+		console.log(e);
 
 		return res.status(500).json({
 			success: false,
