@@ -22,6 +22,7 @@ const companiesRouter = require('./routes/companies');
 const ordersRouter = require('./routes/orders');
 const placesRouter = require('./routes/places');
 const tokensRouter = require('./routes/tokens');
+const requestsRouter = require('./routes/requests');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/companies', companiesRouter);
 app.use('/places', placesRouter);
 app.use('/orders', ordersRouter);
 app.use('/token', tokensRouter);
+app.use('/requests', requestsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

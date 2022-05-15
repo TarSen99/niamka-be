@@ -13,6 +13,7 @@ const createsavedcreditcard = require('./savedcreditcard.js');
 const createtransaction = require('./transaction.js');
 const createuser = require('./user.js');
 const createusersandcompanies = require('./usersandcompanies.js');
+const createrequest = require('./request.js');
 
 const Company = createcompany(sequelize, DataTypes);
 const Image = createimage(sequelize, DataTypes);
@@ -26,6 +27,7 @@ const SavedCreditCard = createsavedcreditcard(sequelize, DataTypes);
 const Transaction = createtransaction(sequelize, DataTypes);
 const User = createuser(sequelize, DataTypes);
 const UsersAndCompanies = createusersandcompanies(sequelize, DataTypes);
+const Request = createrequest(sequelize, DataTypes);
 
 const models = {
 	Company,
@@ -40,6 +42,7 @@ const models = {
 	Transaction,
 	User,
 	UsersAndCompanies,
+	Request,
 };
 
 Object.keys(models).forEach((k) => models[k].associate(models));
@@ -57,4 +60,5 @@ module.exports = {
 	Transaction,
 	User,
 	UsersAndCompanies,
+	Request,
 };
