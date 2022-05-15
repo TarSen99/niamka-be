@@ -36,6 +36,7 @@ const origin = [
 	'http://localhost',
 	'http://localhost:8080',
 	'http://localhost:8081',
+	'https://niamka.com',
 ];
 
 const corsOptions = {
