@@ -1,4 +1,5 @@
 const { DateTime } = require('luxon');
+const fs = require('fs');
 
 const isNull = (v) => {
 	if (!v) {
@@ -41,9 +42,31 @@ const addTimeToNow = (h) => {
 	return plus2h.toISO();
 };
 
+const readEmail = (path, data) => {
+	const fields = [];
+
+	for (const key in data) {
+		fields.push({ key: `[${key}]`, value: data[key] });
+	}
+
+	return new Promise((resolve, reject) => {
+		fs.readFile(path, 'utf8', function (err, data) {
+			if (err) reject(err);
+
+			let newData = data;
+
+			for (const f of fields) {
+				newData = newData.replace(f.key, f.value);
+			}
+			resolve(newData);
+		});
+	});
+};
+
 module.exports = {
 	isNull,
 	getProductsPickupDate,
 	waitTime,
+	readEmail,
 	addTimeToNow,
 };

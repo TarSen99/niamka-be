@@ -1,4 +1,4 @@
-const { User, UsersAndCompanies } = require('./../../models');
+const { User, UsersAndCompanies, Company } = require('./../../models');
 const {
 	USER_ROLES_ARRAY,
 	REGISTER_TYPES,
@@ -8,6 +8,8 @@ const sequelize = require('./../../database');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
 const { getAuth } = require('firebase-admin/auth');
+const emailService = require('./../../services/email-service');
+const { readEmail } = require('./../../helpers');
 
 const validationSchema = yup.object().shape({
 	name: yup.string().required('Field is required').nullable(),
@@ -144,6 +146,27 @@ const addEmployee = async (req, res) => {
 	}
 
 	await transaction.commit();
+
+	try {
+		const companyData = await Company.findByPk(companyId);
+
+		if (companyData) {
+			const emailData = await readEmail('public/emails/Niamka_partner.html', {
+				user_name: name,
+				user_email: email,
+				user_password: password,
+				company_name: companyData.name,
+			});
+
+			await emailService.send({
+				html: emailData,
+				email: email,
+				subject: 'Вітаємо в команді!',
+			});
+		}
+	} catch (e) {
+		console.log(e);
+	}
 
 	return res.status(201).json({
 		success: true,

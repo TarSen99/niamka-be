@@ -12,6 +12,7 @@ require('./services/expire-product-queue/expireProductQueue.js');
 require('./services/clear-order-queue/clearOrdersQueue.js');
 require('./services/take-your-order-service/TakeYourOrderService.js');
 require('./services/send-new-order-notification');
+require('./services/email-service');
 
 require('./database');
 
