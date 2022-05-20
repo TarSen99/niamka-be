@@ -9,8 +9,13 @@ const viewProductDetails = async (req, res) => {
 	const product = await Product.findByPk(id, {
 		include: [
 			Image,
-			Company,
 			{ model: Place, required: true, duplicating: false },
+			{
+				model: Company,
+				attributes: {
+					exclude: ['balance'],
+				},
+			},
 		],
 		attributes: {
 			...distanceAttr,

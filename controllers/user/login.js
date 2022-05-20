@@ -35,7 +35,15 @@ const login = async (req, res) => {
 			where: {
 				[Op.or]: [{ email: loginValue }, { phone: loginValue }],
 			},
-			include: [Company, ProfileSettings],
+			include: [
+				{
+					model: Company,
+					attributes: {
+						exclude: ['balance'],
+					},
+				},
+				ProfileSettings,
+			],
 		});
 	} catch (e) {
 		console.log(e);

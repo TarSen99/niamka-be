@@ -40,8 +40,6 @@ const createOrder = async (req, res) => {
 	const foundProducts = [];
 	const transaction = await sequelize.transaction();
 
-	console.log('Transaction created');
-
 	let place;
 	try {
 		place = await Place.findByPk(placeId);

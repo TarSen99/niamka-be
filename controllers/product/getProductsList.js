@@ -228,6 +228,9 @@ const getProductsList = async (req, res) => {
 					model: Company,
 					required: true,
 					duplicating: false,
+					attributes: {
+						exclude: ['balance'],
+					},
 					where: {
 						...searchFilters.company[0],
 					},

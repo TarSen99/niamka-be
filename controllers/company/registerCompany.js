@@ -26,7 +26,8 @@ const validationSchema = yup.object().shape({
 });
 
 const registerCompany = async (req, res) => {
-	const { name, latitude, longtitude, address, type, description } = req.body;
+	const { name, latitude, longtitude, address, type, description, city } =
+		req.body;
 	const { id } = req.headers;
 	const image = req.file;
 
@@ -82,6 +83,7 @@ const registerCompany = async (req, res) => {
 				// latitude,
 				// longtitude,
 				CompanyId: company.id,
+				city,
 			},
 			{
 				transaction,

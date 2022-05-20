@@ -9,6 +9,8 @@ const {
 } = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
 const getStatusFilter = require('../../helpers/statusFilter.js');
+const { USER_ROLES } = require('../../constants');
+const { Op } = require('sequelize');
 
 const isNull = (v) => {
 	if (!v) {
@@ -21,8 +23,8 @@ const isNull = (v) => {
 const getAllOrders = async (req, res) => {
 	const { placeId, companyId } = req.params;
 	const { offset, limit, meta } = getPagDetails(req.query);
-	const { status } = req.query;
-	const { id } = req.headers;
+	const { status, from, to, establishment, paymentMethod } = req.query;
+	const { id, role } = req.headers;
 
 	const statusFilter = getStatusFilter(status);
 
@@ -37,6 +39,24 @@ const getAllOrders = async (req, res) => {
 	}
 
 	const filter = {};
+	let dateFilter = {};
+
+	if (from && to) {
+		dateFilter = {
+			createdAt: {
+				[Op.gte]: from,
+				[Op.lte]: to,
+			},
+		};
+	}
+
+	if (establishment) {
+		filter.PlaceId = establishment;
+	}
+
+	if (paymentMethod) {
+		filter.paymentMethod = paymentMethod;
+	}
 
 	if (placeId) {
 		filter.PlaceId = +placeId;
@@ -55,16 +75,30 @@ const getAllOrders = async (req, res) => {
 	let orders;
 	let count;
 
+	const exclude = [];
+
+	if (role !== USER_ROLES.CUSTOMER && role) {
+		exclude.push('customerNumber');
+	}
+
 	try {
 		const data = await Order.findAndCountAll({
-			where: { ...filter, ...statusFilter },
+			where: { ...filter, ...statusFilter, ...dateFilter },
+			attributes: {
+				exclude,
+			},
 			include: [
 				{
 					model: OrderProduct,
 				},
 				Place,
 				{ model: User, as: 'Customer' },
-				Company,
+				{
+					model: Company,
+					attributes: {
+						exclude: ['balance'],
+					},
+				},
 			],
 			offset,
 			limit,

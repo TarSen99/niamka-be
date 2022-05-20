@@ -11,7 +11,15 @@ const getProductsList = async (req, res) => {
 		where: {
 			CompanyId: companyId,
 		},
-		include: [Image, Company],
+		include: [
+			Image,
+			{
+				model: Company,
+				attributes: {
+					exclude: ['balance'],
+				},
+			},
+		],
 		offset,
 		limit,
 		distinct: true,

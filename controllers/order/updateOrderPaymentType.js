@@ -1,7 +1,11 @@
 const { Order } = require('../../models');
 const validate = require('./../../helpers/validate');
 const yup = require('yup');
-const { PAYMENT_METHODS, ORDER_STATUSES } = require('../../constants');
+const {
+	PAYMENT_METHODS,
+	ORDER_STATUSES,
+	USER_ROLES,
+} = require('../../constants');
 
 const validationSchema = yup.object().shape({
 	orderId: yup.number().required('Field is required').nullable(),
@@ -9,6 +13,7 @@ const validationSchema = yup.object().shape({
 
 const updateOrderPaymentType = async (req, res) => {
 	const { orderId } = req.params;
+	const { role } = req.headers;
 
 	const v = await validate(validationSchema, {
 		orderId,
@@ -20,8 +25,17 @@ const updateOrderPaymentType = async (req, res) => {
 			errors: v.errors,
 		});
 	}
+	const exclude = [];
 
-	const order = await Order.findByPk(orderId);
+	if (role !== USER_ROLES.CUSTOMER && role) {
+		exclude.push('customerNumber');
+	}
+
+	const order = await Order.findByPk(orderId, {
+		attributes: {
+			exclude,
+		},
+	});
 
 	if (!order) {
 		return res.status(404).json({

@@ -57,6 +57,7 @@ const readEmail = (path, data) => {
 
 			for (const f of fields) {
 				newData = newData.replace(f.key, f.value);
+				newData = newData.replace(f.key, f.value);
 			}
 			resolve(newData);
 		});

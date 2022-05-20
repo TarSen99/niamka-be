@@ -1,7 +1,9 @@
 const { Company, User, Place } = require('./../../models');
+const { USER_ROLES } = require('./../../constants');
 
 const getCompanyDetails = async (req, res) => {
 	const { companyId } = req.params;
+	const { role } = req.headers;
 
 	if (!companyId || companyId === 'undefined' || companyId === 'null') {
 		return res.status(200).json({
@@ -11,6 +13,12 @@ const getCompanyDetails = async (req, res) => {
 	}
 
 	let company;
+
+	const exclude = [];
+
+	if (role !== USER_ROLES.OWNER) {
+		exclude.push('balance');
+	}
 
 	try {
 		company = await Company.findByPk(companyId, {
@@ -24,6 +32,9 @@ const getCompanyDetails = async (req, res) => {
 				},
 				User,
 			],
+			attributes: {
+				exclude: exclude,
+			},
 			order: [[Place, 'id', 'DESC']],
 		});
 	} catch (e) {

@@ -7,7 +7,15 @@ const getUserDetails = async (req, res) => {
 
 	try {
 		user = await User.findByPk(userid, {
-			include: [Company, ProfileSettings],
+			include: [
+				{
+					model: Company,
+					attributes: {
+						exclude: ['balance'],
+					},
+				},
+				ProfileSettings,
+			],
 		});
 	} catch (e) {
 		console.log(e);

@@ -10,7 +10,7 @@ const schema = yup.object().shape({
 });
 
 const addRequest = async (req, res) => {
-	const { firstName, email, mobile, message } = req.body;
+	const { firstName, email, mobile, message, type = 'contact' } = req.body;
 
 	const v = await validate(schema, {
 		firstName,
@@ -34,7 +34,7 @@ const addRequest = async (req, res) => {
 			email,
 			mobile,
 			message,
-			type: 'contact',
+			type,
 		});
 	} catch (e) {
 		return res.status(500).json({

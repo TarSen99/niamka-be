@@ -65,7 +65,7 @@ const createProduct = async (req, res) => {
 	if (productType === 'regular') {
 		productTitle = title;
 	} else {
-		productTitle = 'Niambox';
+		productTitle = 'Нямbox';
 	}
 
 	try {

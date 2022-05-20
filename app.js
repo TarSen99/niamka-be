@@ -24,6 +24,8 @@ const ordersRouter = require('./routes/orders');
 const placesRouter = require('./routes/places');
 const tokensRouter = require('./routes/tokens');
 const requestsRouter = require('./routes/requests');
+const analyticsRouter = require('./routes/analytics.js');
+const paymentsRouter = require('./routes/payments.js');
 
 const app = express();
 
@@ -60,6 +62,8 @@ app.use('/places', placesRouter);
 app.use('/orders', ordersRouter);
 app.use('/token', tokensRouter);
 app.use('/requests', requestsRouter);
+app.use('/analytics', analyticsRouter);
+app.use('/payments', paymentsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

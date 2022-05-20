@@ -10,6 +10,7 @@ const {
 	ORDER_STATUSES,
 	USER_ROLES,
 	REALTIME_CANCELLED_ORDER_PATH,
+	PAYMENT_METHODS,
 } = require('../../constants/');
 const rollbackProductData = require('../../helpers/product/rollbackProductData.js');
 const refundOrder = require('../../controllers/order/refundOrder.js');
@@ -21,7 +22,17 @@ const changeOrderStatus = async (req, res) => {
 	const { role } = req.headers;
 	const { orderId } = req.params;
 	const status = req.orderStatus;
+
+	const exclude = [];
+
+	if (role !== USER_ROLES.CUSTOMER && role) {
+		exclude.push('customerNumber');
+	}
+
 	const order = await Order.findByPk(orderId, {
+		attributes: {
+			exclude,
+		},
 		include: [
 			Company,
 			Transaction,
@@ -33,6 +44,19 @@ const changeOrderStatus = async (req, res) => {
 	});
 
 	const transaction = await sequelize.transaction();
+
+	if (order.status === ORDER_STATUSES.COMPLETED) {
+		const commissionSumm = (order.totalPrice / 100) * order.comission;
+		let balance = order.Company.balance || 0;
+
+		if (order.paymentMethod === PAYMENT_METHODS.CARD) {
+			balance -= commissionSumm;
+		} else {
+			balance += commissionSumm;
+		}
+
+		order.Company.balance = balance;
+	}
 
 	if (status === ORDER_STATUSES.CANCELLED) {
 		try {
@@ -100,6 +124,7 @@ const changeOrderStatus = async (req, res) => {
 
 	try {
 		await order.save({ transaction });
+		await order.Company.save({ transaction });
 	} catch (e) {
 		await transaction.rollback();
 		return res.status(500).json({

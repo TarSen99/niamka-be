@@ -1,7 +1,9 @@
 const { Order, User, Product, OrderProduct, Image } = require('./../../models');
+const { USER_ROLES } = require('../../constants');
 
 const getOrderDetails = async (req, res) => {
 	const { id } = req.params;
+	const { role } = req.headers;
 
 	if (!id) {
 		return res.status(404).json({
@@ -17,8 +19,17 @@ const getOrderDetails = async (req, res) => {
 
 	let order;
 
+	const exclude = [];
+
+	if (role !== USER_ROLES.CUSTOMER && role) {
+		exclude.push('customerNumber');
+	}
+
 	try {
 		order = await Order.findByPk(id, {
+			attributes: {
+				exclude,
+			},
 			include: [{ model: User, as: 'Customer' }, OrderProduct],
 		});
 	} catch (e) {

@@ -64,7 +64,14 @@ const getNearestProducts = async (req, res) => {
 				],
 			},
 			include: [
-				{ model: Company, required: true, duplicating: false },
+				{
+					model: Company,
+					required: true,
+					duplicating: false,
+					attributes: {
+						exclude: ['balance'],
+					},
+				},
 				{
 					model: Place,
 					required: true,

@@ -1,7 +1,8 @@
-const { Order } = require('../../models');
-const { ORDER_STATUSES } = require('../../constants/');
+const { Order, Company } = require('../../models');
+const { ORDER_STATUSES, PAYMENT_METHODS } = require('../../constants/');
 const { Op } = require('sequelize');
 const writeToDb = require('./../../services/firebase/realTimeDb.js');
+const sequelize = require('./../../database');
 
 const changeOrderStatus = async (req, res) => {
 	const { customerNumber } = req.body;
@@ -11,6 +12,11 @@ const changeOrderStatus = async (req, res) => {
 
 	try {
 		order = await Order.findOne({
+			include: [
+				{
+					model: Company,
+				},
+			],
 			where: {
 				id: +orderId,
 				customerNumber,
@@ -43,11 +49,29 @@ const changeOrderStatus = async (req, res) => {
 		});
 	}
 
+	const transaction = await sequelize.transaction();
+
 	order.status = ORDER_STATUSES.COMPLETED;
 
+	const commissionSumm = (order.totalPrice / 100) * order.comission;
+	const curr = order.Company.balance || 0;
+	// let finalSumm = 0;
+
+	if (order.paymentMethod === PAYMENT_METHODS.CARD) {
+		const finalSumm = order.totalPrice - commissionSumm;
+		order.Company.balance = curr + finalSumm;
+	}
+
+	if (order.paymentMethod === PAYMENT_METHODS.CASH) {
+		// finalSumm = curr - commissionSumm;
+		order.Company.balance = curr - commissionSumm;
+	}
+
 	try {
-		await order.save();
+		await order.save({ transaction });
+		await order.Company.save({ transaction });
 	} catch (e) {
+		await transaction.rollback();
 		return res.status(500).json({
 			success: false,
 			errors: [
@@ -67,6 +91,8 @@ const changeOrderStatus = async (req, res) => {
 			createdAt: new Date(),
 		});
 	} catch (e) {}
+
+	await transaction.commit();
 
 	return res.status(200).json({
 		success: true,
