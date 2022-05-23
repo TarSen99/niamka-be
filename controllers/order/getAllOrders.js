@@ -44,8 +44,10 @@ const getAllOrders = async (req, res) => {
 	if (from && to) {
 		dateFilter = {
 			createdAt: {
-				[Op.gte]: from,
-				[Op.lte]: to,
+				[Op.and]: {
+					[Op.gte]: from,
+					[Op.lte]: to,
+				},
 			},
 		};
 	}
