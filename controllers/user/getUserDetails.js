@@ -1,12 +1,12 @@
 const { User, Company, ProfileSettings } = require('./../../models');
 
 const getUserDetails = async (req, res) => {
-	const { userid } = req.headers;
+	const { id } = req.headers;
 
 	let user;
 
 	try {
-		user = await User.findByPk(userid, {
+		user = await User.findByPk(id, {
 			include: [
 				{
 					model: Company,

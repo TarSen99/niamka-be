@@ -207,13 +207,13 @@ const processPayment = async (req, res) => {
 	);
 
 	const payment = {
-		cashIncome: totalCash || 0,
+		cashIncome: totalCash,
 		cashCommission: cashComission,
 		cashRevenue: totalCash - cashComission,
 
-		cardIncome: totalCard - cardComission,
+		cardIncome: totalCard,
 		cardCommission: cardComission,
-		cardRevenue: totalCard,
+		cardRevenue: totalCard - cardComission,
 		status: 'payed',
 		CompanyId: company.id,
 	};
