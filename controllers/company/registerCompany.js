@@ -1,4 +1,4 @@
-const { Company, UsersAndCompanies, Place } = require('./../../models');
+const { Company, UsersAndCompanies, Place, User } = require('./../../models');
 const {
 	USER_ROLES,
 	ESTABLISHMENT_TYPES,
@@ -7,7 +7,8 @@ const {
 const sequelize = require('./../../database');
 const yup = require('yup');
 const validate = require('./../../helpers/validate');
-const { encrypt } = require('./../../helpers/encrypt');
+const emailService = require('./../../services/email-service');
+const { readEmail } = require('./../../helpers');
 
 const validationSchema = yup.object().shape({
 	name: yup
@@ -26,9 +27,17 @@ const validationSchema = yup.object().shape({
 });
 
 const registerCompany = async (req, res) => {
-	const { name, latitude, longtitude, address, type, description, city } =
-		req.body;
-	const { id } = req.headers;
+	const {
+		name,
+		latitude,
+		longtitude,
+		address,
+		type,
+		description,
+		city,
+		user_email,
+		user_password,
+	} = req.body;
 	const image = req.file;
 
 	const v = await validate(validationSchema, {
@@ -44,6 +53,28 @@ const registerCompany = async (req, res) => {
 		return res.status(400).json({
 			success: false,
 			errors: v.errors,
+		});
+	}
+
+	let userData;
+
+	try {
+		userData = await User.findOne({
+			where: {
+				email: user_email,
+			},
+		});
+	} catch (e) {
+		return res.status(400).json({
+			success: false,
+			email: 'User not found',
+		});
+	}
+
+	if (!userData) {
+		return res.status(400).json({
+			success: false,
+			email: 'User not found',
 		});
 	}
 
@@ -104,7 +135,7 @@ const registerCompany = async (req, res) => {
 			{
 				role: USER_ROLES.OWNER,
 				CompanyId: company.id,
-				UserId: id,
+				UserId: userData.id,
 			},
 			{
 				transaction,
@@ -119,20 +150,35 @@ const registerCompany = async (req, res) => {
 	}
 	await transaction.commit();
 
+	const emailData = await readEmail(
+		'public/emails/Niamka_company_created.html',
+		{
+			user_name: userData.name,
+			user_login: user_email,
+			user_password: user_password,
+			company_name: company.name,
+		}
+	);
+
+	await emailService.send({
+		html: emailData,
+		email: user_email,
+		subject: 'Вітаємо в команді!',
+	});
+
 	// writeCookie(res, 'role', USER_ROLES.OWNER);
 	// writeCookie(res, 'companyId', company.id);
 
-	const secretData = {
-		userId: id,
-		companyId: company.id,
-		role: relation.role,
-	};
+	// const secretData = {
+	// 	userId: id,
+	// 	companyId: company.id,
+	// 	role: relation.role,
+	// };
 
-	const encrypted = encrypt(JSON.stringify(secretData));
+	// const encrypted = encrypt(JSON.stringify(secretData));
 
 	return res.status(201).json({
 		success: true,
-		encrypted,
 		data: {
 			company: {
 				...company.toJSON(),

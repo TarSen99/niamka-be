@@ -19,7 +19,7 @@ const getProductsList = async (req, res) => {
 			include: Image,
 			offset,
 			limit,
-			order: [['id', 'DESC']],
+			order: [['createdAt', 'DESC']],
 		});
 	} catch (e) {
 		return res.status(400).json({

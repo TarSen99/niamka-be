@@ -6,11 +6,9 @@ const validate = require('./../../helpers/validate');
 const getDbErrors = require('./../../helpers/validate/getDbErrors.js');
 const { DEFAULT_RADIUS } = require('./../../constants');
 const sequelize = require('./../../database');
-const { encrypt } = require('./../../helpers/encrypt');
 
 const validationSchema = yup.object().shape({
 	name: yup.string().required('Field is required').nullable(),
-	token: yup.string().required('Field is required').nullable(),
 	registerType: yup.string().required('Field is required').nullable(),
 	address: yup.string().nullable(),
 	email: yup
@@ -23,6 +21,10 @@ const validationSchema = yup.object().shape({
 
 			return schema.nullable();
 		}),
+	password: yup
+		.string()
+		.required('Field is required')
+		.min(8, 'Password must contain at least 8 characters'),
 	phone: yup.string().when('registerType', (registerType, schema) => {
 		if (registerType === 'phone') {
 			return schema
@@ -37,15 +39,15 @@ const validationSchema = yup.object().shape({
 });
 
 const creatUser = async (req, res) => {
-	const { name, address, phone, email, token, registerType } = req.body;
+	const { name, address, phone, email, password, registerType } = req.body;
 
 	const v = await validate(validationSchema, {
 		name,
 		address,
 		phone,
 		email,
-		token,
 		registerType,
+		password,
 	});
 
 	if (!v.valid) {
@@ -58,14 +60,20 @@ const creatUser = async (req, res) => {
 	const auth = getAuth(app);
 
 	try {
-		await auth.verifyIdToken(token);
+		const user = await auth.createUser({
+			email,
+			password,
+			displayName: registerType,
+		});
+
+		// await auth.verifyIdToken(token);
 	} catch (e) {
 		return res.status(400).json({
 			success: false,
 			errors: [
 				{
-					field: 'token',
-					error: 'Token is not valid',
+					field: 'user',
+					error: 'User already exists',
 				},
 			],
 		});
@@ -102,6 +110,7 @@ const creatUser = async (req, res) => {
 		);
 	} catch (e) {
 		await transaction.rollback();
+
 		return res.status(400).json({
 			success: false,
 			errors: getDbErrors(e),
@@ -112,15 +121,15 @@ const creatUser = async (req, res) => {
 
 	// writeCookie(res, 'data', user.id);
 
-	const secretData = {
-		userId: user.id,
-	};
+	// const secretData = {
+	// 	userId: user.id,
+	// };
 
-	const encrypted = encrypt(JSON.stringify(secretData));
+	// const encrypted = encrypt(JSON.stringify(secretData));
 
 	return res.status(200).json({
 		success: true,
-		encrypted,
+		// encrypted,
 		data: {
 			...user.toJSON(),
 			ProfileSetting: ProfileSetting.toJSON(),
