@@ -116,7 +116,10 @@ const changeOrderStatus = async (req, res) => {
 						},
 					});
 				}
-			} catch (e) {}
+			} catch (e) {
+				console.log('---');
+				console.log(e);
+			}
 		}
 	}
 
