@@ -71,8 +71,7 @@ const handler = async (data) => {
 					},
 					sequelize.where(
 						sequelize.literal(
-							`(SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${coords[0]}, ${coords[1]}), 4326), ST_SetSRID(ST_MakePoint("longtitude","latitude"), 4326)) +
-							 (SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${coords[0]}, ${coords[1]}), 4326), ST_SetSRID(ST_MakePoint("longtitude","latitude"), 4326)) * 0.2) )`
+							`(SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${coords[0]}, ${coords[1]}), 4326), ST_SetSRID(ST_MakePoint("longtitude","latitude"), 4326)) )`
 						),
 						'<',
 						sequelize.literal(

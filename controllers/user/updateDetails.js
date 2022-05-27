@@ -7,16 +7,8 @@ const validationSchema = yup.object().shape({
 	name: yup.string().nullable(),
 	address: yup.string().nullable(),
 	email: yup.string().email('Email is not valid').nullable(),
-	latitude: yup
-		.number()
-		.typeError('Field must be a number')
-		.positive('Must be more than 0')
-		.nullable(),
-	longtitude: yup
-		.number()
-		.typeError('Field must be a number')
-		.positive('Must be more than 0')
-		.nullable(),
+	latitude: yup.number().typeError('Field must be a number').nullable(),
+	longtitude: yup.number().typeError('Field must be a number').nullable(),
 });
 
 const updateUser = async (req, res) => {

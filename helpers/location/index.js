@@ -32,8 +32,7 @@ const getLocationData = (locationData, radius) => {
 				// ],
 				[
 					Sequelize.literal(
-						`(SELECT ST_DistanceSphere(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") +
-						(SELECT ST_DistanceSphere(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") * 0.2) )`
+						`(SELECT ST_DistanceSphere(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") )`
 					),
 					'distance',
 				],
@@ -43,8 +42,7 @@ const getLocationData = (locationData, radius) => {
 		// calculates distance in degrees
 		withinRadius = sequelize.where(
 			sequelize.literal(
-				`(SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") +
-				 (SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") * 0.2) )`
+				`(SELECT ST_Distance(ST_SetSRID(ST_MakePoint(${currLocation.longtitude}, ${currLocation.latitude}), 4326), "Place"."location") )`
 			),
 			'<',
 			currRadius
