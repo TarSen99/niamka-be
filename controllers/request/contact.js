@@ -4,8 +4,8 @@ const { Request } = require('./../../models');
 
 const schema = yup.object().shape({
 	firstName: yup.string().required("Поле є обо'язковим"),
-	email: yup.string().required("Поле є обо'язковим").email('Некоректний емейл'),
-	mobile: yup.string().required("Поле є обо'язковим"),
+	email: yup.string().email('Некоректний емейл'),
+	mobile: yup.string(),
 	message: yup.string().required("Поле є обо'язковим").max(250, 'Max is 250'),
 });
 

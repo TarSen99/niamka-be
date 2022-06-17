@@ -21,7 +21,10 @@ MyCustomStorage.prototype._handleFile = function (req, file, cb) {
 		);
 
 		const outStream = fs.createWriteStream(name);
-		const resized = sharp().resize(512, 512).jpeg();
+		const resized = sharp()
+			.flatten({ background: 'white' })
+			.resize(512, 512)
+			.jpeg();
 
 		file.stream.pipe(resized).pipe(outStream);
 
