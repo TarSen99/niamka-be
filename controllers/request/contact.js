@@ -4,8 +4,8 @@ const { Request } = require('./../../models');
 
 const schema = yup.object().shape({
 	firstName: yup.string().required("Поле є обо'язковим"),
-	email: yup.string().email('Некоректний емейл'),
-	mobile: yup.string(),
+	email: yup.string().email('Некоректний емейл').nullable(),
+	mobile: yup.string().nullable(),
 	message: yup.string().required("Поле є обо'язковим").max(250, 'Max is 250'),
 });
 
@@ -20,6 +20,8 @@ const addRequest = async (req, res) => {
 	});
 
 	if (!v.valid) {
+		console.log('---');
+		console.log(v);
 		return res.status(400).json({
 			success: false,
 			errors: v.errors,
