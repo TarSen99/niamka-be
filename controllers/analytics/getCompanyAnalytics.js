@@ -5,7 +5,7 @@ const { DateTime } = require('luxon');
 
 const getOrderDetails = async (req, res) => {
 	const { companyId } = req.headers;
-	const { from, to } = req.query;
+	const { from, to, paymentMethod } = req.query;
 	const now = DateTime.now();
 
 	let fromValue;
@@ -26,6 +26,12 @@ const getOrderDetails = async (req, res) => {
 	let allOrders;
 	let totalComission;
 
+	const filter = {};
+
+	if (paymentMethod) {
+		filter.paymentMethod = paymentMethod;
+	}
+
 	try {
 		allOrders = await Order.findAll({
 			include: [
@@ -41,6 +47,7 @@ const getOrderDetails = async (req, res) => {
 					[Op.gte]: fromValue,
 					[Op.lte]: toValue,
 				},
+				...filter,
 			},
 			attributes: [
 				[Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'total'],
@@ -57,6 +64,7 @@ const getOrderDetails = async (req, res) => {
 					[Op.gte]: fromValue,
 					[Op.lte]: toValue,
 				},
+				...filter,
 			},
 			attributes: [
 				[

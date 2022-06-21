@@ -13,6 +13,7 @@ require('./services/clear-order-queue/clearOrdersQueue.js');
 require('./services/take-your-order-service/TakeYourOrderService.js');
 require('./services/send-new-order-notification');
 require('./services/email-service');
+require('./services/repeat-product-service');
 
 require('./database');
 
@@ -39,6 +40,7 @@ const origin = [
 	'http://localhost',
 	'http://localhost:8080',
 	'http://localhost:8081',
+	'http://localhost:8082',
 	'https://niamka.com',
 	'https://admin.niamka.com',
 ];

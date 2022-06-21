@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
 			description: {
 				type: DataTypes.STRING,
 			},
+			category: {
+				type: DataTypes.STRING,
+				defaultValue: 'meal',
+				allowNull: false,
+			},
 			productType: {
 				type: DataTypes.STRING,
 				defaultValue: 'regular',
@@ -73,6 +78,18 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: PRODUCT_STATUSES.ACTIVE,
+			},
+			repeat: {
+				type: DataTypes.BOOLEAN,
+				defaultValue: false,
+			},
+			publishTime: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			primaryId: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
 			},
 			// CompanyId: {
 			// 	type: DataTypes.INTEGER,

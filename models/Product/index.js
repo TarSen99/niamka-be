@@ -58,6 +58,10 @@ const Product = sequelize.define(
 			type: DataTypes.STRING,
 			defaultValue: PRODUCT_STATUSES.ACTIVE,
 		},
+		category: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
 		CompanyId: {
 			type: DataTypes.INTEGER,
 			unique: false,

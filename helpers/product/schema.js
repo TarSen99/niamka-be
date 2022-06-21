@@ -16,6 +16,11 @@ const validationSchema = yup.object().shape({
 		.required('Field is required')
 		.max(200, 'Max length 200 characters')
 		.nullable(),
+	category: yup
+		.string()
+		.required('Field is required')
+		.max(50, 'Max length 50 characters')
+		.nullable(),
 	availableCount: yup
 		.number()
 		.typeError('Field must be a number')

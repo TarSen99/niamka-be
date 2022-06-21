@@ -20,8 +20,6 @@ const addRequest = async (req, res) => {
 	});
 
 	if (!v.valid) {
-		console.log('---');
-		console.log(v);
 		return res.status(400).json({
 			success: false,
 			errors: v.errors,

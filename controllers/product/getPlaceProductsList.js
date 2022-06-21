@@ -1,6 +1,7 @@
 const { Product, Image } = require('../../models');
 const { getPagDetails } = require('../../helpers/pagination');
 const getStatusFilter = require('../../helpers/statusFilter.js');
+const sequelize = require('./../../database/index.js');
 
 const getProductsList = async (req, res) => {
 	const { offset, limit, meta } = getPagDetails(req.query);
@@ -12,6 +13,11 @@ const getProductsList = async (req, res) => {
 
 	try {
 		data = await Product.findAndCountAll({
+			// attributes: [
+			// 	'id',
+			// 	'createdAt',
+			// 	[sequelize.literal('(SELECT DISTINCT ("title"))'), 'title'],
+			// ],
 			where: {
 				PlaceId: placeId,
 				...statusFilter,
@@ -20,8 +26,10 @@ const getProductsList = async (req, res) => {
 			offset,
 			limit,
 			order: [['createdAt', 'DESC']],
+			// required: false,
 		});
 	} catch (e) {
+		console.log(e);
 		return res.status(400).json({
 			success: false,
 		});

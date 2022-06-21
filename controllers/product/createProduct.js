@@ -17,6 +17,9 @@ const createProduct = async (req, res) => {
 		placeId,
 		imagesAsUrl = [],
 		productType,
+		category,
+		repeat,
+		publishTime,
 	} = req.body;
 
 	const v = await validate(validationSchema, {
@@ -31,6 +34,9 @@ const createProduct = async (req, res) => {
 		takeTimeTo,
 		placeId,
 		productType,
+		category,
+		repeat,
+		publishTime,
 	});
 
 	if (!v.valid) {
@@ -85,6 +91,10 @@ const createProduct = async (req, res) => {
 				PlaceId: placeId,
 				CompanyId: place.CompanyId,
 				productType,
+				category,
+				repeat,
+				publishTime,
+				primaryId: null,
 			},
 			{
 				transaction: productTransaction,

@@ -12,6 +12,9 @@ const fields = [
 	'fullPrice',
 	'discountPercent',
 	'priceWithDiscount',
+	'category',
+	'repeat',
+	'publishTime',
 ];
 
 const updateProduct = async (req, res) => {
@@ -21,6 +24,7 @@ const updateProduct = async (req, res) => {
 		availableCount,
 		availableCountPerPerson,
 		fullPrice,
+		category,
 		discountPercent,
 		priceWithDiscount,
 		takeTimeFrom,
@@ -28,6 +32,8 @@ const updateProduct = async (req, res) => {
 		productType,
 		placeId,
 		imagesAsUrl = [],
+		repeat = false,
+		publishTime = null,
 	} = req.body;
 	const { productId } = req.params;
 
@@ -43,6 +49,9 @@ const updateProduct = async (req, res) => {
 		takeTimeTo,
 		placeId,
 		productType,
+		category,
+		repeat,
+		publishTime,
 	});
 
 	if (!v.valid) {
@@ -134,6 +143,35 @@ const updateProduct = async (req, res) => {
 
 			files.push(imageData.toJSON());
 		} catch (e) {
+			await productTransaction.rollback();
+
+			return res.status(404).json({
+				success: false,
+				errors: [
+					{
+						field: null,
+						error: e,
+					},
+				],
+			});
+		}
+	}
+
+	if (product.primaryId) {
+		let primaryProduct;
+		try {
+			primaryProduct = await Product.findOne({
+				where: {
+					id: +product.primaryId,
+				},
+			});
+
+			primaryProduct.repeat = repeat;
+			primaryProduct.publishTime = publishTime;
+
+			await primaryProduct.save({ transaction: productTransaction });
+		} catch (e) {
+			console.log(e);
 			await productTransaction.rollback();
 
 			return res.status(404).json({

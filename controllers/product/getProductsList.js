@@ -4,7 +4,6 @@ const { getLocationData } = require('../../helpers/location');
 const { Sequelize, Op } = require('sequelize');
 const { PRODUCT_STATUSES } = require('../../constants/index.js');
 const { addTimeToNow } = require('../../helpers/index.js');
-const e = require('express');
 
 const HOT_DISCOUNT_PERCENT_MIN = 59;
 
@@ -73,9 +72,15 @@ const getFilterQuery = (filter) => {
 	}
 };
 
-const getSearchFilters = ({ status = '', type = '', product_type = '' }) => {
+const getSearchFilters = ({
+	status = '',
+	type = '',
+	product_type = '',
+	category = '',
+}) => {
 	const result = [];
 	const companyResult = [];
+
 	const statusValue = status
 		.replace(
 			'all',
@@ -85,6 +90,15 @@ const getSearchFilters = ({ status = '', type = '', product_type = '' }) => {
 		.filter((el) => !!el);
 	const typeValue = type.split(',').filter((el) => !!el);
 	const product_typeValue = product_type.split(',').filter((el) => !!el);
+	const categoryValue = category.split(',').filter((v) => !!v);
+
+	if (categoryValue.length) {
+		result.push({
+			category: {
+				[Op.in]: categoryValue,
+			},
+		});
+	}
 
 	if (statusValue.length) {
 		result.push({
@@ -135,6 +149,7 @@ const getProductsList = async (req, res) => {
 		status,
 		type,
 		product_type,
+		category,
 	} = req.query;
 	const { location, radius } = req.headers;
 	const { distanceAttr, hasLocation, withinRadius } = getLocationData(
@@ -147,7 +162,12 @@ const getProductsList = async (req, res) => {
 		order: [],
 	};
 
-	const searchFilters = getSearchFilters({ status, type, product_type });
+	const searchFilters = getSearchFilters({
+		status,
+		type,
+		product_type,
+		category,
+	});
 
 	let order;
 	let dir = 'DESC';
