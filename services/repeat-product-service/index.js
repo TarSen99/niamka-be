@@ -10,13 +10,51 @@ const getTimeString = () => {
 	return formattedTime;
 };
 
+const getTime = (timeValue, add = 0) => {
+	// const timeValue = DateTime.fromJSDate(new Date(time));
+	const hours = timeValue.get('hour');
+	const minutes = timeValue.get('minute');
+
+	const now = DateTime.now();
+	const withTime = now.set({
+		hour: hours,
+		minute: minutes,
+		day: now.get('day') + add,
+	});
+
+	return withTime;
+};
+
+const getTimeValues = (from, to) => {
+	const timeFrom = DateTime.fromJSDate(new Date(from));
+	const timeTo = DateTime.fromJSDate(new Date(to));
+
+	const dayFrom = timeFrom.get('day');
+	const dayTo = timeTo.get('day');
+	// if take time to is different day
+	let addDay = dayFrom === dayTo ? 0 : 1;
+
+	const nowFrom = getTime(timeFrom).toISO();
+	const nowTo = getTime(timeTo, addDay).toISO();
+
+	return {
+		from: nowFrom,
+		to: nowTo,
+	};
+};
+
 const repeatProducts = async () => {
 	const time = getTimeString();
 	let products;
 
 	try {
 		products = await Product.findAll({
-			include: Image,
+			include: [
+				{
+					model: Image,
+					required: false,
+				},
+			],
 			where: {
 				primaryId: null,
 				repeat: true,
@@ -27,6 +65,7 @@ const repeatProducts = async () => {
 			},
 		});
 	} catch (e) {
+		console.log(e);
 		return;
 	}
 
@@ -52,6 +91,8 @@ const repeatProducts = async () => {
 		} = product;
 
 		try {
+			const { from, to } = getTimeValues(takeTimeFrom, takeTimeTo);
+
 			const newProduct = await Product.create(
 				{
 					title,
@@ -62,8 +103,8 @@ const repeatProducts = async () => {
 					fullPrice,
 					discountPercent,
 					priceWithDiscount,
-					takeTimeFrom,
-					takeTimeTo,
+					takeTimeFrom: from,
+					takeTimeTo: to,
 					availableForSale: true,
 					PlaceId,
 					CompanyId,
@@ -107,7 +148,19 @@ newProductsQueue.process(async () => {
 	repeatProducts();
 });
 
-newProductsQueue.add(null, { repeat: { cron: '0,15,30 * * * *' } });
+const run = async () => {
+	let jobs = await newProductsQueue.getJobs(['delayed']);
+	let jobToDelete = jobs.find(
+		(delayedJob) => delayedJob.opts.repeat.jobId == 'newProductsQueue'
+	);
+	if (jobToDelete) {
+		await jobToDelete.remove();
+	}
 
-// for testing, runs each minute
-// newProductsQueue.add(null, { repeat: { cron: '* * * * *' } });
+	newProductsQueue.add(null, { repeat: { cron: '0,15,30 * * * *' } });
+
+	// for testing, runs each minute
+	// newProductsQueue.add(null, { repeat: { cron: '* * * * *' } });
+};
+
+run();
