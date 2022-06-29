@@ -2,6 +2,7 @@ const { Product, Place, Image } = require('./../../models');
 const sequelize = require('./../../database');
 const validationSchema = require('./../../helpers/product/schema.js');
 const validate = require('./../../helpers/validate');
+const { isNull } = require('./../../helpers/index.js');
 
 const createProduct = async (req, res) => {
 	const {
@@ -18,7 +19,7 @@ const createProduct = async (req, res) => {
 		imagesAsUrl = [],
 		productType,
 		category,
-		repeat,
+		repeat = false,
 		publishTime,
 	} = req.body;
 
@@ -45,6 +46,8 @@ const createProduct = async (req, res) => {
 			errors: v.errors,
 		});
 	}
+
+	const repeatValue = isNull(repeat) ? false : repeat;
 
 	let product;
 
@@ -92,7 +95,7 @@ const createProduct = async (req, res) => {
 				CompanyId: place.CompanyId,
 				productType,
 				category,
-				repeat,
+				repeat: repeatValue,
 				publishTime,
 				primaryId: null,
 			},

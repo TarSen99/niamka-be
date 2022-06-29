@@ -3,6 +3,7 @@ const sequelize = require('./../../database');
 const validationSchema = require('./../../helpers/product/schema.js');
 const validate = require('./../../helpers/validate');
 const { PRODUCT_TYPES } = require('./../../constants/index.js');
+const { isNull } = require('./../../helpers/index.js');
 
 const fields = [
 	'title',
@@ -61,6 +62,8 @@ const updateProduct = async (req, res) => {
 		});
 	}
 
+	const repeatValue = isNull(repeat) ? false : repeat;
+
 	let product;
 
 	const productTransaction = await sequelize.transaction();
@@ -88,7 +91,11 @@ const updateProduct = async (req, res) => {
 
 	try {
 		fields.forEach((field) => {
-			product[field] = req.body[field];
+			if (field !== 'repeat') {
+				product[field] = req.body[field];
+			} else {
+				product[field] = repeatValue;
+			}
 		});
 
 		await product.save({ transaction: productTransaction });
